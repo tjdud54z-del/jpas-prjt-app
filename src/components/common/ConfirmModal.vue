@@ -31,6 +31,15 @@
 <script setup lang="ts">
 import { ref, watch, nextTick, onBeforeUnmount } from 'vue'
 
+/**
+ * ===============================
+ * Props 정의
+ * ===============================
+ * - isShow   : 모달 노출 여부
+ * - message  : 표시할 메시지
+ * - onConfirm: 확인 버튼 클릭 시 실행
+ * - onCancel : 취소 버튼 클릭 시 실행
+ */
 const props = defineProps<{
   isShow: boolean
   message: string
@@ -38,10 +47,24 @@ const props = defineProps<{
   onCancel: () => void
 }>()
 
-/* refs */
+
+/**
+ * ===============================
+ * DOM 참조 refs
+ * ===============================
+ * - 포커스 트랩을 위해 버튼 DOM 직접 제어
+ */
 const cancelBtn = ref<HTMLButtonElement | null>(null)
 const confirmBtn = ref<HTMLButtonElement | null>(null)
 
+  
+/**
+ * ===============================
+ * 포커스 관리용 변수
+ * ===============================
+ * - focusableEls : 탭 이동 대상 엘리먼트 목록
+ * - currentIndex : 현재 포커스 위치
+ */
 let focusableEls: HTMLElement[] = []
 let currentIndex = 0
 

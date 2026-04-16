@@ -2,8 +2,9 @@
 import { ref } from 'vue'
 
 /**
+ * ===============================
  * Promise 기반 Modal Hook
- *
+ * ===============================
  * 사용 흐름
  * 1) const { isShow, excuteModal, resolver, rejecter } = useModal((...args)=>{ 초기화 })
  * 2) const result = await excuteModal<T>(...params)
