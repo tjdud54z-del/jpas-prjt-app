@@ -8,4 +8,4 @@
 3. npm install
 4. npm audit fix
 5. npm run dev/local/front
-6. (로컬) http://localhost:[port]/login | (IP) http://[IP]:[port]/login -> backEnd using checked!
+6. (로컬) http://localhost:[port]/login | (IP) http://[IP]:[port]/login -> backEnd using checked!t
