@@ -24,7 +24,10 @@ const isConfirm = computed(() => confirmModal.isShow.value)
   <Transition name="modal">
     <div v-if="isShow" class="modal-backdrop">
       <div class="modal-box">
-        <p class="message">{{ message }}</p>
+        <h3 class="logo-text">알림창</h3>
+        <div class="confirm-message">
+          {{ message }}
+        </div>
 
         <div class="actions">
           <!-- Alert -->
@@ -98,5 +101,16 @@ const isConfirm = computed(() => confirmModal.isShow.value)
   display: flex;
   justify-content: flex-end;
   gap: 8px;
+}
+
+.confirm-message {
+  white-space: pre-line;
+}
+
+.logo-text {
+  font-size: 24px;
+  font-weight: bold;
+  font-family: 'Courier New', Courier, monospace;
+  white-space: nowrap;        /* 줄바꿈 방지 (사이드바 좁을 때 유용) */
 }
 </style>
