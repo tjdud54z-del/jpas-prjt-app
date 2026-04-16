@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import { computed } from 'vue'
 
@@ -19,6 +18,9 @@ const props = withDefaults(
     autofocus?: boolean
     name?: string
     id?: string
+
+    /** ✅ label 추가 */
+    label?: string
 
     /** UI 옵션 */
     size?: InputSize
@@ -44,8 +46,8 @@ const props = withDefaults(
     size: 'md',
     variant: 'primary',
     invalid: false,
-    mb: 12,       // 기본 아래 여백
-    width: '100%' // 기본은 꽉 차게
+    mb: 12,
+    width: '100%',
   }
 )
 
@@ -59,16 +61,14 @@ const emit = defineEmits<{
   (e: 'enter', value: string): void
 }>()
 
-const inputClass = computed(() => {
-  return [
-    'input',
-    `input-${props.variant}`,
-    `input-${props.size}`,
-    props.invalid ? 'is-invalid' : '',
-    props.disabled ? 'is-disabled' : '',
-    props.readonly ? 'is-readonly' : '',
-  ]
-})
+const inputClass = computed(() => [
+  'input',
+  `input-${props.variant}`,
+  `input-${props.size}`,
+  props.invalid ? 'is-invalid' : '',
+  props.disabled ? 'is-disabled' : '',
+  props.readonly ? 'is-readonly' : '',
+])
 
 const valueAsString = computed(() => String(props.modelValue ?? ''))
 
@@ -79,7 +79,7 @@ const widthCss = computed(() => {
 
 const inputStyle = computed(() => ({
   width: widthCss.value,
-  marginBottom: `${props.mb}px`,
+  marginBottom: props.label ? undefined : `${props.mb}px`, // ✅ label 있으면 margin form-field에서 처리
 }))
 
 function onInput(e: Event) {
@@ -102,35 +102,52 @@ function onKeydown(e: KeyboardEvent) {
 </script>
 
 <template>
-  <input
-    :id="id"
-    :name="name"
-    :type="type"
-    :class="inputClass"
-    :style="inputStyle"
-    :value="valueAsString"
-    :placeholder="placeholder"
-    :disabled="disabled"
-    :readonly="readonly"
-    :maxlength="maxlength"
-    :minlength="minlength"
-    :autocomplete="autocomplete"
-    :autofocus="autofocus"
-    @input="onInput"
-    @change="onChange"
-    @focus="emit('focus', $event)"
-    @blur="emit('blur', $event)"
-    @keydown="onKeydown"
-  />
+  <div class="form-field">
+    <label v-if="label">{{ label }}</label>
+
+    <input
+      :id="id"
+      :name="name"
+      :type="type"
+      :class="inputClass"
+      :style="inputStyle"
+      :value="valueAsString"
+      :placeholder="placeholder"
+      :disabled="disabled"
+      :readonly="readonly"
+      :maxlength="maxlength"
+      :minlength="minlength"
+      :autocomplete="autocomplete"
+      :autofocus="autofocus"
+      @input="onInput"
+      @change="onChange"
+      @focus="emit('focus', $event)"
+      @blur="emit('blur', $event)"
+      @keydown="onKeydown"
+    />
+  </div>
 </template>
 
 <style scoped>
+/* ✅ form-grid / ElSelectBox / ElDatePicker와 동일 */
+.form-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.form-field label {
+  font-size: 13px;
+  font-weight: 500;
+  color: #374151;
+}
+
 .input {
   display: inline-block;
   box-sizing: border-box;
   border: 1px solid #d0d5dd;
   border-radius: 6px;
-  padding: 8px 10px;
   outline: none;
 }
 
