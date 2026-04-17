@@ -5,6 +5,7 @@ import { createPinia } from 'pinia'
 import App from './App.vue'
 import router from './router'
 import '@/styles/common.css'
+import '@/styles/global.css'
 import 'tabulator-tables/dist/css/tabulator.min.css'
 
 createApp(App)

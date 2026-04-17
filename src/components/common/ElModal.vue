@@ -44,7 +44,19 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
     <Transition name="modal-fade-scale" appear>
       <div class="modal-backdrop" @click.self="emit('close')">
         <div class="modal-container" :class="sizeClass">
-          <slot />
+
+          <div v-if="$slots.header" class="modal-header">
+            <slot name="header"></slot>
+          </div>
+
+          <div class="modal-body">
+            <slot></slot>
+          </div>
+
+          <div v-if="$slots.footer" class="modal-footer">
+            <slot name="footer"></slot>
+          </div>
+
         </div>
       </div>
     </Transition>
@@ -52,34 +64,86 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 </template>
 
 <style scoped>
-/* ✅ backdrop */
+/* =============================
+   Backdrop
+============================= */
 .modal-backdrop {
   position: fixed;
   inset: 0;
-  background: rgba(15, 23, 42, 0.55);
+  background: rgba(15, 23, 42, 0.6);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
+
+  /* 살짝 유리 느낌 */
+  backdrop-filter: blur(2px);
 }
 
-/* ✅ container */
+/* =============================
+   Container
+============================= */
 .modal-container {
+  display: flex;
+  flex-direction: column;
+
   background: #ffffff;
-  border-radius: 14px;
+  border-radius: 16px;
   max-height: 90vh;
   overflow: hidden;
+
   box-shadow:
-    0 20px 40px rgba(0, 0, 0, 0.25),
-    0 4px 12px rgba(0, 0, 0, 0.15);
+    0 24px 48px rgba(0, 0, 0, 0.28),
+    0 8px 16px rgba(0, 0, 0, 0.18);
 }
 
-/* ✅ size */
+/* =============================
+   Size
+============================= */
 .modal-sm { width: 420px; }
 .modal-md { width: 640px; }
 .modal-lg { width: 900px; }
 
-/* ✅ 애니메이션 */
+/* =============================
+   Header
+============================= */
+.modal-header {
+  padding: 18px 22px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+/* =============================
+   Body
+============================= */
+.modal-body {
+  padding: 1px;
+  overflow-y: auto;
+  color: #1f2937;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* =============================
+   Footer
+============================= */
+.modal-footer {
+  padding: 14px 22px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+
+/* =============================
+   Animation (유지)
+============================= */
 .modal-fade-scale-enter-active,
 .modal-fade-scale-leave-active {
   transition: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
@@ -88,6 +152,6 @@ onUnmounted(() => window.removeEventListener('keydown', handleKeydown))
 .modal-fade-scale-enter-from,
 .modal-fade-scale-leave-to {
   opacity: 0;
-  transform: scale(0.9);
+  transform: scale(0.92);
 }
 </style>

@@ -52,6 +52,10 @@ const userInfo = computed(() => {
   padding: 20px;
   display: flex;
   flex-direction: column;
+  border-radius: 16px;
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.25),
+    0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 /* 로고 영역 */

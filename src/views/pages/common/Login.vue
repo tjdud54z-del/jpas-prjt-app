@@ -56,45 +56,137 @@ const onkeydownHandler = async (event: { key: string }) => {
 </script>
 
 <template>
-  <div class="login">
-    <img
-      src="@/assets/main-logo.png"
-      alt="관리자"
-      class="profile-image" />
-    <h2>로그인 페이지</h2>
-    <ElInputText
-      v-model="employeeNo"
-      :width="300"
-      placeholder="사번을 입력하세요." />
-    <ElInputText
-      v-model="password"
-      type="password"
-      :width="300"
-      @keydown="onkeydownHandler"
-      placeholder="비밀번호를 입력하세요." />
-    <ElButton 
-      type="primary" 
-      :disabled="loading" 
-      @click="login">
-      로그인
-    </ElButton>
+  <div class="login-page">
+    <div class="login-card">
+      <div class="login-form">
+        <div class="login-header">
+          <img
+            src="@/assets/main-logo.png"
+            alt="관리자"
+            class="profile-image" />
+          <h2 class="title">로그인</h2>
+        </div>
+        <ElInputText
+          v-model="employeeNo"
+          :mb="4"
+          placeholder="사번을 입력하세요." />
+        <ElInputText
+          v-model="password"
+          type="password"
+          :mb="0"
+          @keydown="onkeydownHandler"
+          placeholder="비밀번호를 입력하세요." />
+        <ElButton
+          type="primary"
+          :disabled="loading"
+          @click="login">
+          로그인
+        </ElButton>
+      </div>
+      <div class="login-image">
+        <img src="@/assets/main-logo.png" alt="logo" />
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
-.login {
+/* 전체 */
+.login-page {
   height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  flex-direction: column;
+  background: #f3f4f6;
 }
 
+/* 카드 */
+.login-card {
+  display: flex;
+  width: 760px;
+  height: 420px;
+  background: #ffffff;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.12),
+    0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+/* =====================
+   왼쪽 폼
+===================== */
+.login-form {
+  width: 50%;
+  padding: 40px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+}
+
+/* 로고 + 타이틀 한 줄 */
+.login-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  justify-content: center;   /* ⬅ 가로 중앙 */
+  align-self: center;        /* ⬅ 부모 flex(column) 기준 중앙 */
+
+}
+
+/* 동그라미 유지 핵심 */
 .profile-image {
-  width: 72px;
-  height: 72px;
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #4f46e5;
+}
+
+/* 타이틀 */
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0;
+}
+
+/* =====================
+   오른쪽 이미지
+===================== */
+.login-image {
+  width: 50%;
+  background: linear-gradient(135deg, #4f46e5, #6366f1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.login-image img {
+  width: 200px;
+  height: 150px;
+  opacity: 0.9;
+}
+
+/* =====================
+   반응형
+===================== */
+@media (max-width: 768px) {
+  .login-card {
+    flex-direction: column;
+    width: 90%;
+    height: auto;
+  }
+
+  .login-form,
+  .login-image {
+    width: 100%;
+  }
+
+  .login-image {
+    padding: 32px 0;
+  }
 }
 </style>
