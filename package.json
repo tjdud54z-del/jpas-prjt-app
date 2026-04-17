@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "local": "vite",
+    "front": "vite",
     "start": "vite",
     "build": "vue-tsc -b && vite build",
     "preview": "vite preview"
