@@ -1,39 +1,39 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
-type InputType = 'text' | 'password' | 'email' | 'number' | 'search' | 'tel' | 'url'
-type InputSize = 'sm' | 'md' | 'lg'
-type InputVariant = 'primary' | 'secondary' | 'danger' | 'success'
+type InputType = 'text' | 'password' | 'email' | 'number' | 'search' | 'tel' | 'url';
+type InputSize = 'sm' | 'md' | 'lg';
+type InputVariant = 'primary' | 'secondary' | 'danger' | 'success';
 
 const props = withDefaults(
   defineProps<{
-    modelValue?: string | number
-    type?: InputType
-    placeholder?: string
-    disabled?: boolean
-    readonly?: boolean
-    maxlength?: number
-    minlength?: number
-    autocomplete?: string
-    autofocus?: boolean
-    name?: string
-    id?: string
+    modelValue?: string | number;
+    type?: InputType;
+    placeholder?: string;
+    disabled?: boolean;
+    readonly?: boolean;
+    maxlength?: number;
+    minlength?: number;
+    autocomplete?: string;
+    autofocus?: boolean;
+    name?: string;
+    id?: string;
 
-    /** ✅ label 추가 */
-    label?: string
+    /** label 추가 */
+    label?: string;
 
     /** UI 옵션 */
-    size?: InputSize
-    variant?: InputVariant
+    size?: InputSize;
+    variant?: InputVariant;
 
     /** 상태 */
-    invalid?: boolean
+    invalid?: boolean;
 
     /** spacing */
-    mb?: number
+    mb?: number;
 
     /** width (ex: 300 -> 300px, '100%' -> 그대로) */
-    width?: number | string
+    width?: number | string;
   }>(),
   {
     modelValue: '',
@@ -47,56 +47,49 @@ const props = withDefaults(
     variant: 'primary',
     invalid: false,
     mb: 12,
-    width: '100%',
+    width: '100%'
   }
-)
+);
 
 const emit = defineEmits<{
-  (e: 'update:modelValue', value: string): void
-  (e: 'input', value: string): void
-  (e: 'change', value: string): void
-  (e: 'focus', ev: FocusEvent): void
-  (e: 'blur', ev: FocusEvent): void
-  (e: 'keydown', ev: KeyboardEvent): void
-  (e: 'enter', value: string): void
-}>()
+  (e: 'update:modelValue', value: string): void;
+  (e: 'input', value: string): void;
+  (e: 'change', value: string): void;
+  (e: 'focus', ev: FocusEvent): void;
+  (e: 'blur', ev: FocusEvent): void;
+  (e: 'keydown', ev: KeyboardEvent): void;
+  (e: 'enter', value: string): void;
+}>();
 
-const inputClass = computed(() => [
-  'input',
-  `input-${props.variant}`,
-  `input-${props.size}`,
-  props.invalid ? 'is-invalid' : '',
-  props.disabled ? 'is-disabled' : '',
-  props.readonly ? 'is-readonly' : '',
-])
+const inputClass = computed(() => ['input', `input-${props.variant}`, `input-${props.size}`, props.invalid ? 'is-invalid' : '', props.disabled ? 'is-disabled' : '', props.readonly ? 'is-readonly' : '']);
 
-const valueAsString = computed(() => String(props.modelValue ?? ''))
+const valueAsString = computed(() => String(props.modelValue ?? ''));
 
 const widthCss = computed(() => {
-  if (props.width === undefined || props.width === null) return undefined
-  return typeof props.width === 'number' ? `${props.width}px` : props.width
-})
+  if (props.width === undefined || props.width === null) return undefined;
+  return typeof props.width === 'number' ? `${props.width}px` : props.width;
+});
 
 const inputStyle = computed(() => ({
   width: widthCss.value,
-  marginBottom: props.label ? undefined : `${props.mb}px`, // ✅ label 있으면 margin form-field에서 처리
-}))
+  marginBottom: props.label ? undefined : `${props.mb}px` // label 있으면 margin form-field에서 처리
+}));
 
 function onInput(e: Event) {
-  const v = (e.target as HTMLInputElement).value
-  emit('update:modelValue', v)
-  emit('input', v)
+  const v = (e.target as HTMLInputElement).value;
+  emit('update:modelValue', v);
+  emit('input', v);
 }
 
 function onChange(e: Event) {
-  const v = (e.target as HTMLInputElement).value
-  emit('change', v)
+  const v = (e.target as HTMLInputElement).value;
+  emit('change', v);
 }
 
 function onKeydown(e: KeyboardEvent) {
-  emit('keydown', e)
+  emit('keydown', e);
   if (e.key === 'Enter') {
-    emit('enter', valueAsString.value)
+    emit('enter', valueAsString.value);
   }
 }
 </script>
@@ -129,7 +122,7 @@ function onKeydown(e: KeyboardEvent) {
 </template>
 
 <style scoped>
-/* ✅ form-grid / ElSelectBox / ElDatePicker와 동일 */
+/* form-grid / ElSelectBox / ElDatePicker와 동일 */
 .form-field {
   display: flex;
   flex-direction: column;
@@ -156,14 +149,34 @@ function onKeydown(e: KeyboardEvent) {
   box-shadow: 0 0 0 3px rgba(76, 125, 255, 0.15);
 }
 
-.input-sm { padding: 6px 8px; font-size: 12px; }
-.input-md { padding: 8px 10px; font-size: 14px; }
-.input-lg { padding: 10px 12px; font-size: 16px; }
+.input-sm {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+.input-md {
+  padding: 8px 10px;
+  font-size: 14px;
+}
+.input-lg {
+  padding: 10px 12px;
+  font-size: 16px;
+}
 
-.input-success { border-color: #12b76a; }
-.input-danger { border-color: #f04438; }
+.input-success {
+  border-color: #12b76a;
+}
+.input-danger {
+  border-color: #f04438;
+}
 
-.is-invalid { border-color: #f04438; }
-.is-disabled { background: #f2f4f7; cursor: not-allowed; }
-.is-readonly { background: #f9fafb; }
+.is-invalid {
+  border-color: #f04438;
+}
+.is-disabled {
+  background: #f2f4f7;
+  cursor: not-allowed;
+}
+.is-readonly {
+  background: #f9fafb;
+}
 </style>

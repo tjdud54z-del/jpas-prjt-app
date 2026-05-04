@@ -1,95 +1,91 @@
-
 <script setup lang="ts">
-import { computed, ref, onMounted, onUnmounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { http } from '@/api/common/http'
-import { useConfirm } from '@/composables/useConfirm'
-import { getTokenExpireRemain } from '@/api/common/token'
+import { http } from '@/api/common/http';
+import { getTokenExpireRemain } from '@/api/common/token';
+import { useConfirm } from '@/composables/useConfirm';
+import { computed, onMounted, onUnmounted, ref } from 'vue';
+import { useRouter } from 'vue-router';
 
-const router = useRouter()
-const { openConfirm } = useConfirm()
+const router = useRouter();
+const { openConfirm } = useConfirm();
 
 /** 로그인 사용자 정보 */
 const userInfo = computed(() => {
-  const raw = localStorage.getItem('userInfo')
-  return raw ? JSON.parse(raw) : null
-})
+  const raw = localStorage.getItem('userInfo');
+  return raw ? JSON.parse(raw) : null;
+});
 
 /** 남은 세션 시간 (초) */
-const remainSeconds = ref(0)
-let timer: number | null = null
+const remainSeconds = ref(0);
+let timer: number | null = null;
 
 /** mm:ss 포맷 */
 const remainTimeText = computed(() => {
-  const sec = Math.max(0, remainSeconds.value)
-  const m = String(Math.floor(sec / 60)).padStart(2, '0')
-  const s = String(sec % 60).padStart(2, '0')
-  return `${m}:${s}`
-})
+  const sec = Math.max(0, remainSeconds.value);
+  const m = String(Math.floor(sec / 60)).padStart(2, '0');
+  const s = String(sec % 60).padStart(2, '0');
+  return `${m}:${s}`;
+});
 
 /** 세션 타이머 시작 */
 const startSessionTimer = () => {
-  const remain = getTokenExpireRemain()
-  remainSeconds.value = Math.floor(remain / 1000)
+  const remain = getTokenExpireRemain();
+  remainSeconds.value = Math.floor(remain / 1000);
 
-  if (remainSeconds.value <= 0) return
+  if (remainSeconds.value <= 0) return;
 
   timer = window.setInterval(() => {
-    remainSeconds.value--
+    remainSeconds.value--;
 
     if (remainSeconds.value <= 0) {
-      stopSessionTimer()
-      forceLogout()
+      stopSessionTimer();
+      forceLogout();
     }
-  }, 1000)
-}
+  }, 1000);
+};
 
 const stopSessionTimer = () => {
   if (timer) {
-    clearInterval(timer)
-    timer = null
+    clearInterval(timer);
+    timer = null;
   }
-}
+};
 
 /** 만료 시 강제 로그아웃 */
 const forceLogout = async () => {
-  localStorage.clear()
-  delete http.defaults.headers.common.Authorization
-  await router.replace('/login')
-}
+  localStorage.clear();
+  delete http.defaults.headers.common.Authorization;
+  await router.replace('/login');
+};
 
 /** 수동 로그아웃 */
 const logout = async () => {
-  const ok = await openConfirm('정말 로그아웃 하시겠습니까?\n(반드시 데이터 저장상태를 확인하세요.)')
-  if (!ok) return
+  const ok = await openConfirm('정말 로그아웃 하시겠습니까?\n(반드시 데이터 저장상태를 확인하세요.)');
+  if (!ok) return;
 
-  stopSessionTimer()
-  localStorage.clear()
-  delete http.defaults.headers.common.Authorization
-  router.push('/login')
-}
+  stopSessionTimer();
+  localStorage.clear();
+  delete http.defaults.headers.common.Authorization;
+  router.push('/login');
+};
 
 onMounted(() => {
-  startSessionTimer()
-})
+  startSessionTimer();
+});
 
 onUnmounted(() => {
-  stopSessionTimer()
-})
+  stopSessionTimer();
+});
 </script>
-
-
 
 <template>
   <header class="header">
     <!-- 왼쪽 : 로그인 사용자 정보 -->
-    <div class="header-left">어서오세요. 
+    <div class="header-left">
+      어서오세요.
       <span v-if="userInfo" class="user-name" style="color: brown">
         {{ userInfo.name }}
       </span>
-      <span v-if="userInfo" class="user-empno">
-        ({{ userInfo.employeeNo }})님
-      </span>
+      <span v-if="userInfo" class="user-empno"> ({{ userInfo.userNo }})님 </span>
       <!-- <span
         v-if="remainSeconds > 0"
         class="session-remain">
@@ -106,13 +102,10 @@ onUnmounted(() => {
 
     <!-- 오른쪽 : 로그아웃 -->
     <div class="header-right">
-      <button class="logout-btn" @click="logout">
-        로그아웃
-      </button>
+      <button class="logout-btn" @click="logout">로그아웃</button>
     </div>
   </header>
 </template>
-
 
 <style scoped>
 .header {

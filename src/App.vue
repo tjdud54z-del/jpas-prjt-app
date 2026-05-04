@@ -1,14 +1,12 @@
-
 <script setup lang="ts">
-// import GlobalLoadingBar from '@/components/common/GlobalLoadingBar.vue'
-import GlobalLoadingOverlay from '@/components/common/GlobalLoadingOverlay.vue'
-import ModalHost from '@/components/common/ModalHost.vue'
+import GlobalLoadingOverlay from '@/components/common/GlobalLoadingOverlay.vue';
+import ModalHost from '@/components/common/ModalHost.vue';
 </script>
 
-
 <template>
-  <!-- <GlobalLoadingBar /> -->
+  <router-view />
   <GlobalLoadingOverlay />
   <ModalHost />
-  <router-view />
 </template>
+
+<style scoped></style>
