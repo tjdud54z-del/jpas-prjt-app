@@ -1,6 +1,6 @@
 <script setup>
-import { ref } from 'vue';
-import AppMenuItem from './AppMenuItem.vue';
+import { ref } from 'vue'
+import AppMenuItem from './AppMenuItem.vue'
 
 const model = ref([
   {
@@ -18,14 +18,14 @@ const model = ref([
     path: '/admin',
     items: [
       {
-        label: '직원관리',
+        label: '유저관리',
         icon: 'pi pi-fw pi-align-left',
         path: '/admin_1',
         items: [
           {
-            label: '직원정보관리',
+            label: '유저정보관리',
             icon: 'pi pi-fw pi-circle',
-            to: '/employees'
+            to: '/users'
           }
         ]
       },
@@ -298,7 +298,7 @@ const model = ref([
       }
     ]
   }
-]);
+])
 </script>
 
 <template>

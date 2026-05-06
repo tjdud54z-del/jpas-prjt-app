@@ -12,7 +12,7 @@ declare global {
 export interface DmPayload {
   conversationId: number; // 필수 (store 필터 기준)
   messageId?: number;
-  senderUserId?: string; // Principal 기반
+  senderUserId?: number; // Principal 기반
   senderUserNo?: string;
   senderUserNm?: string;
   receiverUserId?: string; // Principal 기반
@@ -85,7 +85,7 @@ export function useDmClient() {
 
     const raw = localStorage.getItem('userInfo') ?? '{}';
     const userInfo = JSON.parse(raw);
-    const senderUserId: string = userInfo.userId; // Principal과 같은 값이어야 함
+    const senderUserId: number = userInfo.userId; // Principal과 같은 값이어야 함
 
     const msg: DmPayload = {
       senderUserId,

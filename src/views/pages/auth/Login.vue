@@ -14,7 +14,6 @@ const loading = ref(false);
 
 const login = async () => {
   if (!userNo.value?.trim() || !password.value) {
-    console.log('체크함..');
     await openAlert('사번/비밀번호를 입력하세요.');
     return;
   }

@@ -1,15 +1,15 @@
-import type { RouteRecordRaw } from 'vue-router';
-import { createRouter, createWebHistory } from 'vue-router';
+import type { RouteRecordRaw } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 
 /* ==============================
  * Layouts
  * ============================== */
-import AppLayout from '@/layout/AppLayout.vue';
+import AppLayout from '@/layout/AppLayout.vue'
 
 /* ==============================
  * Pages (직접 import 필요한 것만)
  * ============================== */
-import Login from '@/views/pages/auth/Login.vue';
+import Login from '@/views/pages/auth/Login.vue'
 
 /* ==============================
  * Routes
@@ -31,9 +31,9 @@ const routes: RouteRecordRaw[] = [
         redirect: '/login'
       },
       {
-        path: 'employees',
-        name: 'employees',
-        component: () => import('@/views/pages/EmployeeList.vue')
+        path: 'users',
+        name: 'users',
+        component: () => import('@/views/pages/UserList.vue')
       },
       {
         path: '/dm',
@@ -161,9 +161,9 @@ const routes: RouteRecordRaw[] = [
   //     component: AdminLayout,
   //     children: [
   //         {
-  //             path: 'employees',
-  //             name: 'employees',
-  //             component: () => import('@/views/pages/EmployeeList.vue')
+  //             path: 'users',
+  //             name: 'users',
+  //             component: () => import('@/views/pages/UserList.vue')
   //         },
   //         {
   //             path: 'departments',
@@ -199,7 +199,7 @@ const routes: RouteRecordRaw[] = [
     name: 'notfound',
     component: () => import('@/views/pages/NotFound.vue')
   }
-];
+]
 
 /* ==============================
  * Router
@@ -207,6 +207,6 @@ const routes: RouteRecordRaw[] = [
 const router = createRouter({
   history: createWebHistory(),
   routes
-});
+})
 
-export default router;
+export default router
