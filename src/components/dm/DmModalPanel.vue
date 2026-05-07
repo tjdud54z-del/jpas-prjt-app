@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { sendDmMessage } from '@/api/dmApi'
+import { markConversationRead, sendDmMessage } from '@/api/dmApi'
 import type { DmPayload } from '@/composables/useDmClient'
 import { useDmStore } from '@/store/dmStore'
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
@@ -22,6 +22,9 @@ const store = useDmStore()
 const text = ref('')
 const listRef = ref<HTMLDivElement | null>(null)
 
+/** 상대방이 마지막으로 읽은 메시지 ID */
+const peerLastReadMessageId = computed(() => store.peerLastReadMessageId)
+
 /** 메시지 정렬 */
 const messages = computed(() =>
   [...store.activeMessages].sort((a, b) => {
@@ -30,35 +33,52 @@ const messages = computed(() =>
   })
 )
 
-/** 날짜가 바뀌는지 판단 */
+/* ==================================================
+   추가: 내가 보낸 메시지 중 "마지막" messageId
+   ================================================== */
+const lastMyMessageId = computed<number | null>(() => {
+  const myMessages = messages.value.filter((m) => (String(m.senderUserId) === String(props.myUserId) || String(m.senderUserNo) === String(props.myUserNo)) && m.messageId)
+
+  if (myMessages.length === 0) return null
+  return Math.max(...myMessages.map((m) => m.messageId!))
+})
+
+/* ==================================================
+   변경: 읽음 표시 조건 (마지막 메시지 1개만)
+   ================================================== */
+const isRead = (m: any) => {
+  // 1) 내 메시지인가?
+  const isMine = String(m.senderUserId) === String(props.myUserId) || String(m.senderUserNo) === String(props.myUserNo)
+  if (!isMine) return false
+
+  // 2) 서버 확정 메시지인가?
+  if (!m.messageId) return false
+
+  // 3) 상대방이 읽었는가?
+  if (peerLastReadMessageId.value < m.messageId) return false
+
+  // 4) 내가 보낸 "마지막" 메시지인가?
+  return m.messageId === lastMyMessageId.value
+}
+
+/** 날짜 관련 기존 로직 그대로 */
 const isNewDate = (idx: number) => {
   if (idx === 0) return true
-
   const prev = messages.value[idx - 1]
   const curr = messages.value[idx]
-
   if (!prev?.sentAt || !curr?.sentAt) return false
-
-  const prevDate = new Date(prev.sentAt).toISOString().slice(0, 10)
-  const currDate = new Date(curr.sentAt).toISOString().slice(0, 10)
-
-  return prevDate !== currDate
+  return new Date(prev.sentAt).toISOString().slice(0, 10) !== new Date(curr.sentAt).toISOString().slice(0, 10)
 }
 
-/** YYYY-MM-DD 포맷 */
-const formatDateLabel = (t?: string) => {
-  if (!t) return ''
-  return new Date(t).toISOString().slice(0, 10)
-}
+const formatDateLabel = (t?: string) => (t ? new Date(t).toISOString().slice(0, 10) : '')
 
-/** 시간 포맷 */
 const formatTime = (t?: string) => {
   if (!t) return ''
   const d = new Date(t)
   return `${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}`
 }
 
-/** 메시지 전송 */
+/** 메시지 전송 로직 그대로 */
 const handleSend = async () => {
   const content = text.value.trim()
   if (!content) return
@@ -92,13 +112,16 @@ const handleSend = async () => {
   }
 }
 
-/** 최초 진입 스크롤 */
+/* ==================================================
+   그대로 유지: 채팅창 열릴 때 읽음 처리
+   ================================================== */
 onMounted(async () => {
   await nextTick()
   listRef.value?.scrollTo({ top: listRef.value.scrollHeight })
+
+  await markConversationRead(props.conversationId, props.myUserId)
 })
 
-/** 자동 스크롤 */
 watch(messages, () => {
   requestAnimationFrame(() => {
     listRef.value?.scrollTo({ top: listRef.value.scrollHeight, behavior: 'smooth' })
@@ -121,12 +144,10 @@ watch(messages, () => {
     <div class="dm__body">
       <div class="msg-list" ref="listRef">
         <template v-for="(m, idx) in messages" :key="m.messageId ?? m.tempId">
-          <!-- 날짜 구분선 -->
           <div v-if="isNewDate(idx)" class="date-divider">
             {{ formatDateLabel(m.sentAt) }}
           </div>
 
-          <!-- 메시지 -->
           <div class="msg" :class="{ mine: m.senderUserId === myUserId || String(m.senderUserId) === String(myUserNo) }">
             <div v-if="m.senderUserId !== myUserId && String(m.senderUserId) !== String(myUserNo)" class="sender-name">
               {{ m.senderUserNm }}
@@ -135,6 +156,8 @@ watch(messages, () => {
             <div class="bubble">
               <div class="content">{{ m.content }}</div>
               <div class="time">
+                <!-- 여기 isRead 로직만 변경됨 -->
+                <!-- <span v-if="isRead(m)" class="read">✔</span> -->
                 {{ formatTime(m.sentAt) }}
               </div>
             </div>
@@ -303,6 +326,12 @@ watch(messages, () => {
 
 .mini.err {
   color: #dc2626;
+}
+
+.read {
+  font-size: 11px;
+  color: #2563eb;
+  margin-left: 4px;
 }
 
 /* =========================

@@ -1,36 +1,33 @@
-import { ref } from 'vue';
+import { ref } from 'vue'
 
 declare global {
   interface Window {
-    StompJs: any;
+    StompJs: any
   }
 }
 
-/**
- * userId 기준 DM Payload
- */
+/** DM Payload */
 export interface DmPayload {
-  conversationId: number; // 필수 (store 필터 기준)
-  messageId?: number;
-  senderUserId?: number; // Principal 기반
-  senderUserNo?: string;
-  senderUserNm?: string;
-  receiverUserId?: string; // Principal 기반
-  content?: string;
-  sentAt?: string;
+  conversationId: number
+  messageId?: number
+  senderUserId?: number
+  senderUserNo?: string
+  senderUserNm?: string
+  receiverUserId?: string
+  content?: string
+  sentAt?: string
 }
 
-/**
- * DM WebSocket Client (Native WS + STOMP)
- */
+/** DM WebSocket Client */
 export function useDmClient() {
-  const client = ref<any>(null);
-  const connected = ref(false);
+  const client = ref<any>(null)
+  const connected = ref(false)
 
+  /** WebSocket 연결 */
   const connect = (onMessage: (msg: DmPayload) => void) => {
-    if (client.value?.active) return;
+    if (client.value?.active) return
 
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('accessToken')
 
     const c = new window.StompJs.Client({
       brokerURL: 'ws://localhost:8080/ws',
@@ -38,80 +35,77 @@ export function useDmClient() {
       reconnectDelay: 3000,
 
       onConnect: () => {
-        console.log('STOMP CONNECTED');
-        connected.value = true;
+        connected.value = true
+        console.log('STOMP CONNECTED')
 
-        // 유저 큐 구독(정답): /user/queue/dm
+        // DM 수신
         c.subscribe('/user/queue/dm', (frame: any) => {
-          const msg: DmPayload = JSON.parse(frame.body);
-          console.log('📩 DM RECEIVED', msg);
-          onMessage(msg);
-        });
+          const msg: DmPayload = JSON.parse(frame.body)
+          onMessage(msg)
+        })
       },
 
       onDisconnect: () => {
-        console.log('❌ STOMP DISCONNECTED');
-        connected.value = false;
-      },
-
-      onStompError: (frame: any) => {
-        console.error('[STOMP ERROR]', frame.headers?.message, frame.body);
-      },
-
-      onWebSocketError: (e: any) => {
-        console.error('[WS ERROR]', e);
+        connected.value = false
+        console.log('❌ STOMP DISCONNECTED')
       }
-    });
+    })
 
-    c.activate();
-    client.value = c;
-  };
+    c.activate()
+    client.value = c
+  }
 
-  /**
-   * DM 전송 (userId 기준)
-   * - payload에 receiverUserId 반드시 포함
-   * - conversationId 반드시 포함
-   * - onLocalMessage로 optimistic UI 처리
-   */
+  /** READ 이벤트 구독 */
+  const subscribeRead = (conversationId: number, cb: (evt: any) => void) => {
+    if (!client.value || !client.value.connected) return () => {}
+
+    const sub = client.value.subscribe(`/topic/dm/read/${conversationId}`, (frame: any) => cb(JSON.parse(frame.body)))
+
+    return () => sub.unsubscribe()
+  }
+
+  /** DM 전송 */
   const send = (
     payload: {
-      receiverUserId: string;
-      content: string;
-      conversationId: number;
+      receiverUserId: string
+      content: string
+      conversationId: number
     },
     onLocalMessage?: (msg: DmPayload) => void
   ) => {
-    if (!client.value || !connected.value) return;
+    if (!client.value || !connected.value) return
 
-    const raw = localStorage.getItem('userInfo') ?? '{}';
-    const userInfo = JSON.parse(raw);
-    const senderUserId: number = userInfo.userId; // Principal과 같은 값이어야 함
+    const raw = localStorage.getItem('userInfo') ?? '{}'
+    const userInfo = JSON.parse(raw)
 
     const msg: DmPayload = {
-      senderUserId,
+      senderUserId: userInfo.userId,
       receiverUserId: payload.receiverUserId,
       conversationId: payload.conversationId,
       content: payload.content,
       sentAt: new Date().toISOString()
-    };
-
-    console.log('📤 DM SEND', msg);
+    }
 
     client.value.publish({
       destination: '/pub/dm.send',
       body: JSON.stringify(msg)
-    });
+    })
 
-    // optimistic UI
-    onLocalMessage?.(msg);
-  };
+    onLocalMessage?.(msg)
+  }
 
   const disconnect = async () => {
-    if (!client.value) return;
-    await client.value.deactivate();
-    client.value = null;
-    connected.value = false;
-  };
+    if (!client.value) return
+    await client.value.deactivate()
+    client.value = null
+    connected.value = false
+  }
 
-  return { connect, send, disconnect, connected };
+  return {
+    connect,
+    subscribeRead,
+    send,
+    disconnect,
+    connected
+  }
 }

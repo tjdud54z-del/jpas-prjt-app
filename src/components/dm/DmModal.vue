@@ -31,7 +31,7 @@ onUnmounted(() => {
 
 <template>
   <teleport to="body">
-    <!-- ✅ 위치/레이아웃만 담당 -->
+    <!-- 위치/레이아웃만 담당 -->
     <div v-if="open" class="dm-float">
       <slot />
     </div>

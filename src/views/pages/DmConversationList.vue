@@ -1,66 +1,66 @@
 <script setup lang="ts">
-import { fetchDmConversations, markConversationRead, type DmConversationListItem } from '@/api/dmApi';
-import { onMounted, ref, watch } from 'vue';
+import { fetchDmConversations, markConversationRead, type DmConversationListItem } from '@/api/dmApi'
+import { onMounted, ref, watch } from 'vue'
 
-import { useDmStore } from '@/store/dmStore';
-const store = useDmStore();
+import { useDmStore } from '@/store/dmStore'
+const store = useDmStore()
 
 const emit = defineEmits<{
-  (e: 'open', item: DmConversationListItem): void;
-}>();
+  (e: 'open', item: DmConversationListItem): void
+}>()
 
-const conversations = ref<DmConversationListItem[]>([]);
-const loading = ref(false);
+const conversations = ref<DmConversationListItem[]>([])
+const loading = ref(false)
 
 /** 로그인 사용자 ID */
 const getUserId = (): number => {
-  const raw = localStorage.getItem('userInfo') ?? '{}';
-  const userInfo = JSON.parse(raw);
-  return Number(userInfo.userId);
-};
+  const raw = localStorage.getItem('userInfo') ?? '{}'
+  const userInfo = JSON.parse(raw)
+  return Number(userInfo.userId)
+}
 
 /** DM 대화 목록 로딩 */
 const load = async () => {
-  const userId = getUserId();
-  loading.value = true;
+  const userId = getUserId()
+  loading.value = true
   try {
-    const res = await fetchDmConversations({ userId, size: 30 });
-    conversations.value = res.data;
+    const res = await fetchDmConversations({ userId: userId, size: 30 })
+    conversations.value = res.data
   } finally {
-    loading.value = false;
+    loading.value = false
   }
-};
+}
 
 /** 대화 클릭 handler */
 const onClick = async (item: DmConversationListItem) => {
-  const userId = getUserId();
+  const userId = getUserId()
 
   // UI 먼저 즉시 반영 (낙관적 업데이트)
   if (item.unreadCount > 0) {
-    item.unreadCount = 0;
+    item.unreadCount = 0
   }
 
   // 대화방 화면 오픈
-  emit('open', item);
+  emit('open', item)
 
   // 백엔드에 읽음 처리 요청
   try {
-    await markConversationRead(item.conversationId, userId);
+    await markConversationRead(item.conversationId, userId)
   } catch (e) {
-    console.error('읽음 처리 실패', e);
+    console.error('읽음 처리 실패', e)
     // 필요하면 여기서만 다시 load()로 동기화
     // await load();
   }
-};
+}
 
 watch(
   () => store.needReloadConversationList,
   async () => {
-    await load(); // ✅ 기존 DM 리스트 조회 함수
+    await load() // 기존 DM 리스트 조회 함수
   }
-);
+)
 
-onMounted(load);
+onMounted(load)
 </script>
 
 <template>

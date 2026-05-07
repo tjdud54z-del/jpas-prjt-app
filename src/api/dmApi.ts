@@ -76,14 +76,8 @@ export const sendDmMessage = (req: SendDmMessageReq) => {
  * (R) 메시지 히스토리
  * - messageId DESC 커서 페이징
  * ======================= */
-export const fetchDmMessages = (
-  conversationId: number,
-  params: {
-    size?: number
-    cursorMessageId?: number
-  }
-) => {
-  return http.get<DmMessageRow[]>(`/api/dm/conversations/${conversationId}/messages`, { params })
+export const fetchDmMessages = (params: { conversationId?: number; size?: number; userId?: number; cursorMessageId?: number }) => {
+  return http.post<DmMessageRow[]>(`/api/dm/conversations/messages`, params)
 }
 
 /* =======================
