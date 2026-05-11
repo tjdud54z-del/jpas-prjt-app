@@ -157,7 +157,7 @@ const retire = async () => {
 
   const selectedUsers = users.value.filter((e) => checkedIds.value.includes(e.userId))
 
-  const inactiveList = selectedUserss.filter((e) => e.activeYn === 'N')
+  const inactiveList = selectedUsers.filter((e) => e.activeYn === 'N')
   const activeList = selectedUsers.filter((e) => e.activeYn === 'Y')
 
   if (inactiveList.length > 0) {
@@ -268,36 +268,34 @@ onMounted(() => {
         <div class="form-grid cols-4">
           <div class="flex flex-col gap-1">
             <label for="userNo">유저ID</label>
-            <ElInputText v-model="searchForm.userNo" type="text" placeholder="사번을 입력하세요." />
+            <ElInputText v-model="searchForm.userNo" size="md" type="text" placeholder="사번을 입력하세요." />
           </div>
           <div class="flex flex-col gap-1">
             <label for="name">이름</label>
-            <ElInputText v-model="searchForm.name" type="text" placeholder="이름을 입력하세요." />
+            <ElInputText v-model="searchForm.name" size="md" type="text" placeholder="이름을 입력하세요." />
           </div>
           <div class="flex flex-col gap-1">
             <label for="activeYn">탈퇴여부</label>
-            <ElSelectBox v-model="searchForm.activeYn" :options="activeOptions" class="w-full"></ElSelectBox>
+            <ElSelectBox v-model="searchForm.activeYn" size="md" :options="activeOptions" class="w-full"></ElSelectBox>
           </div>
           <div class="flex flex-col gap-1">
             <label for="birthDate">생년월일</label>
-            <ElDatePicker v-model="searchForm.birthDate" />
+            <ElDatePicker v-model="searchForm.birthDate" size="md" showMonthYearSelect clearable />
           </div>
         </div>
         <div class="search-actions">
-          <ElButton type="primary" @click="searchUsers"> 조회 </ElButton>
-          <ElButton type="secondary" @click="resetSearch"> 초기화 </ElButton>
+          <ElButton type="primary" size="md" @click="searchUsers"> 조회 </ElButton>
+          <ElButton type="secondary" size="md" @click="resetSearch"> 초기화 </ElButton>
         </div>
       </div>
-
       <!-- 컨텐츠영역>제목/버튼 -->
       <div class="header-bar">
         <div class="action-bar">
-          <ElButton type="primary" @click="addUser"> 유저 추가 </ElButton>
-          <ElButton type="danger" :disabled="checkedIds.length === 0 || loadingStore.isLoading" @click="retire"> 탈퇴 처리 </ElButton>
-          <ElButton type="success" :disabled="checkedIds.length === 0 || loadingStore.isLoading" @click="restore"> 복구 처리 </ElButton>
+          <ElButton type="primary" size="md" @click="addUser"> 등록 </ElButton>
+          <ElButton type="danger" size="md" :disabled="checkedIds.length === 0 || loadingStore.isLoading" @click="retire"> 탈퇴 </ElButton>
+          <ElButton type="success" size="md" :disabled="checkedIds.length === 0 || loadingStore.isLoading" @click="restore"> 복구 </ElButton>
         </div>
       </div>
-
       <!-- 공통 Tabulator Grid -->
       <ElTabulatorGrid :data="users" :columns="columns" :options="gridOptions" index-field="userId" height="475px" @ready="onGridReady" @selection-change="onSelectionChange" />
     </div>
