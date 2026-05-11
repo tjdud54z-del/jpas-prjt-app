@@ -8,7 +8,7 @@ const { isLoading } = storeToRefs(loadingStore)
 
 <template>
   <div v-if="isLoading" class="overlay">
-    <img src="@/assets/loadingBar3.gif" alt="loading" class="spinner" />
+    <img src="@/assets/loadingBar2-96.gif" alt="loading" class="spinner" />
   </div>
 </template>
 
