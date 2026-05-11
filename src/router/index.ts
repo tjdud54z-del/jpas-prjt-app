@@ -36,12 +36,12 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/views/pages/UserList.vue')
       },
       {
-        path: '/dm',
+        path: 'dm',
         name: 'DmPage',
         component: () => import('@/views/pages/DmPage.vue')
       },
       {
-        path: '/dmManage',
+        path: 'dmManage',
         name: 'dmManage',
         component: () => import('@/views/pages/DmManager.vue')
       },
