@@ -6,10 +6,13 @@ module.exports = {
   env: {
     node: true
   },
-  extends: ['plugin:vue/vue3-essential', 'eslint:recommended', '@vue/eslint-config-prettier'],
+  parser: 'vue-eslint-parser',
   parserOptions: {
-    ecmaVersion: 'latest'
+    parser: '@typescript-eslint/parser',
+    ecmaVersion: 'latest',
+    sourceType: 'module'
   },
+  extends: ['plugin:vue/vue3-essential', 'eslint:recommended', '@vue/eslint-config-prettier'],
   rules: {
     'prettier/prettier': [
       'error',
@@ -17,7 +20,7 @@ module.exports = {
         endOfLine: 'auto'
       }
     ],
-    // 기존 규칙
+    // 기존 규칙 유지
     'vue/multi-word-component-names': 'off',
     'vue/no-reserved-component-names': 'off',
     'vue/component-tags-order': [
