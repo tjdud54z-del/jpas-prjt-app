@@ -26,7 +26,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
-  placeholder: '날짜 선택',
+  placeholder: '선택',
   disabled: false,
   size: 'md',
   invalid: false,

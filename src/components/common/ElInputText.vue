@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 type InputType = 'text' | 'password' | 'email' | 'number' | 'search' | 'tel' | 'url'
 type InputSize = 'sm' | 'md' | 'lg'
@@ -38,7 +38,7 @@ const props = withDefaults(
   {
     modelValue: '',
     type: 'text',
-    placeholder: '',
+    placeholder: '입력',
     disabled: false,
     readonly: false,
     autocomplete: 'off',
