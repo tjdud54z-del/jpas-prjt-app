@@ -55,8 +55,13 @@ const onSelectionChange = (rows: Record<string, any>[]) => {
 }
 
 const activeOptions = [
-  { label: '복구', value: 'Y' },
+  { label: '정상', value: 'Y' },
   { label: '탈퇴', value: 'N' }
+]
+
+const genderOptions = [
+  { label: '남성', value: 'M' },
+  { label: '여성', value: 'W' }
 ]
 
 /** Tabulator 컬럼 정의 */
@@ -79,6 +84,8 @@ const columns: any[] = [
   { title: '이름', field: 'name', sorter: 'string' },
   { title: '이메일', field: 'email', sorter: 'string' },
   { title: '생년월일', field: 'birthDate', sorter: 'number' },
+  { title: '성별', field: 'genderFlag', sorter: 'string' },
+  { title: '전화번호', field: 'phoneNumber', sorter: 'string' },
   { title: '메인주소', field: 'addressMain', sorter: 'string' },
   { title: '상세주소', field: 'addressSub', sorter: 'string' },
   {
@@ -130,7 +137,8 @@ const dmValidation = async (peeruserNo: string, activeYn: string) => {
 
 /** 유저 handler */
 const addUser = () => {
-  showCreateModal.value = true
+  // showCreateModal.value = true
+  router.push('/users/create')
 }
 
 /** 유저목록 조회 handler */
@@ -261,44 +269,91 @@ onMounted(() => {
 <!-- 탬플릿 Area -->
 <template>
   <div class="card">
-    <div class="font-semibold text-xl mb-4">유저관리</div>
+    <div class="font-semibold text-xl mb-4">유저 List</div>
     <div class="custom-content">
       <!-- 검색 영역 -->
       <div class="search-bar">
         <div class="form-grid cols-4">
           <div class="flex flex-col gap-1">
             <label for="userNo">유저ID</label>
-            <ElInputText v-model="searchForm.userNo" size="md" type="text" placeholder="사번을 입력하세요." />
+            <ElInputText 
+              v-model="searchForm.userNo" 
+              size="md"
+              type="text" />
           </div>
           <div class="flex flex-col gap-1">
             <label for="name">이름</label>
-            <ElInputText v-model="searchForm.name" size="md" type="text" placeholder="이름을 입력하세요." />
+            <ElInputText 
+              v-model="searchForm.name" 
+              size="md" 
+              type="text" />
           </div>
           <div class="flex flex-col gap-1">
             <label for="activeYn">탈퇴여부</label>
-            <ElSelectBox v-model="searchForm.activeYn" size="md" :options="activeOptions" class="w-full"></ElSelectBox>
+            <ElSelectBox 
+              v-model="searchForm.activeYn" 
+              size="md" 
+              :options="activeOptions" 
+              class="w-full" />
           </div>
           <div class="flex flex-col gap-1">
             <label for="birthDate">생년월일</label>
-            <ElDatePicker v-model="searchForm.birthDate" size="md" showMonthYearSelect clearable />
+            <ElDatePicker 
+              v-model="searchForm.birthDate" 
+              size="md" 
+              showMonthYearSelect 
+              clearable />
           </div>
         </div>
         <div class="search-actions">
-          <ElButton type="primary" size="md" @click="searchUsers"> 조회 </ElButton>
-          <ElButton type="secondary" size="md" @click="resetSearch"> 초기화 </ElButton>
+          <ElButton 
+            type="primary" 
+            size="md" 
+            @click="searchUsers"
+            label="조회" />
+          <ElButton 
+            type="secondary" 
+            size="md" 
+            @click="resetSearch"
+            label="초기화" />
         </div>
       </div>
       <!-- 컨텐츠영역>제목/버튼 -->
       <div class="header-bar">
         <div class="action-bar">
-          <ElButton type="primary" size="md" @click="addUser"> 등록 </ElButton>
-          <ElButton type="danger" size="md" :disabled="checkedIds.length === 0 || loadingStore.isLoading" @click="retire"> 탈퇴 </ElButton>
-          <ElButton type="success" size="md" :disabled="checkedIds.length === 0 || loadingStore.isLoading" @click="restore"> 복구 </ElButton>
+          <ElButton 
+            type="primary" 
+            size="md" 
+            @click="addUser"
+            label="등록" />
+          <ElButton 
+            type="danger" 
+            size="md" 
+            :disabled="checkedIds.length === 0 || loadingStore.isLoading" 
+            @click="retire"
+            label="탈퇴" />
+          <ElButton 
+            type="success" 
+            size="md" 
+            :disabled="checkedIds.length === 0 || loadingStore.isLoading" 
+            @click="restore" 
+            label="복구" />
         </div>
       </div>
       <!-- 공통 Tabulator Grid -->
-      <ElTabulatorGrid :data="users" :columns="columns" :options="gridOptions" index-field="userId" height="475px" @ready="onGridReady" @selection-change="onSelectionChange" />
+      <ElTabulatorGrid 
+        :data="users" 
+        :columns="columns" 
+        :options="gridOptions" 
+        index-field="userId" 
+        height="475px" 
+        @ready="onGridReady" 
+        @selection-change="onSelectionChange" />
     </div>
   </div>
-  <UserCreatePopup v-if="showCreateModal" @submit="submitUser" @cancel="cancelCreate" />
+  <!-- 유저등록 Popup -->
+  <UserCreatePopup 
+    v-if="showCreateModal" 
+    @submit="submitUser" 
+    @cancel="cancelCreate" />
 </template>

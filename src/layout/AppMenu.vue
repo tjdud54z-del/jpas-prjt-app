@@ -23,9 +23,14 @@ const model = ref([
         path: '/admin_1',
         items: [
           {
-            label: '유저정보관리',
+            label: '유저 List',
             icon: 'pi pi-fw pi-circle',
             to: '/users'
+          },
+          {
+            label: '유저등록',
+            icon: 'pi pi-fw pi-circle',
+            to: '/users/create'
           }
         ]
       },
@@ -35,19 +40,19 @@ const model = ref([
         path: '/admin_2',
         items: [
           {
-            label: '코드정보관리',
+            label: '코드 List',
             icon: 'pi pi-fw pi-circle',
             to: '/commonCodes'
           }
         ]
       },
       {
-        label: 'DM관리',
+        label: '채팅관리',
         icon: 'pi pi-fw pi-align-left',
         path: '/admin_3',
         items: [
           {
-            label: 'DM정보관리',
+            label: '채팅 List',
             icon: 'pi pi-fw pi-circle',
             to: '/dmManage'
           }

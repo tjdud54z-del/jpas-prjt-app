@@ -23,6 +23,8 @@ export interface User {
   addressMain: string // 부서코드
   addressSub: string // 직급코드
   activeYn: 'Y' | 'N' // 재직여부
+  genderFlag: string // 성별
+  phoneNumber: string // 전화번호
 }
 
 /**
