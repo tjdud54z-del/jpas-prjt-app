@@ -120,20 +120,20 @@ const columns: any[] = [
 ]
 
 /** DM 페이지 이동 벨리데이션 */
-const dmValidation = async (peeruserNo: string, activeYn: string) => {
-  let userInfo = localStorage.getItem('userInfo')
-  const paserInfo = JSON.parse(userInfo ?? '{}')
+// const dmValidation = async (peeruserNo: string, activeYn: string) => {
+//   let userInfo = localStorage.getItem('userInfo')
+//   const paserInfo = JSON.parse(userInfo ?? '{}')
 
-  if (paserInfo.userNo === peeruserNo) {
-    await openAlert('자신에게는 DM을 보낼 수 없습니다.')
-    return
-  } else if (activeYn === 'N') {
-    await openAlert('탈퇴자에게는 DM을 보낼 수 없습니다.')
-    return
-  } else {
-    router.push(`/dm?peer=${peeruserNo}`) // DM 페이지로 이동 + 상대 userId 전달
-  }
-}
+//   if (paserInfo.userNo === peeruserNo) {
+//     await openAlert('자신에게는 DM을 보낼 수 없습니다.')
+//     return
+//   } else if (activeYn === 'N') {
+//     await openAlert('탈퇴자에게는 DM을 보낼 수 없습니다.')
+//     return
+//   } else {
+//     router.push(`/dm?peer=${peeruserNo}`) // DM 페이지로 이동 + 상대 userId 전달
+//   }
+// }
 
 /** 유저 handler */
 const addUser = () => {
@@ -230,7 +230,8 @@ const searchForm = ref({
   userNo: '',
   name: '',
   birthDate: '',
-  activeYn: '' as '' | 'Y' | 'N'
+  activeYn: '' as '' | 'Y' | 'N',
+  genderFlag: '' as '' | 'M' | 'W'
 })
 
 /** 조회 버튼 */
@@ -240,7 +241,7 @@ const searchUsers = async () => {
 
 /** 초기화 버튼 */
 const resetSearch = async () => {
-  searchForm.value = { userNo: '', name: '', birthDate: '', activeYn: '' }
+  searchForm.value = { userNo: '', name: '', birthDate: '', activeYn: '', genderFlag: '' }
 
   // 초기화 시 선택도 같이 초기화(UX 안정)
   checkedIds.value = []
@@ -251,6 +252,7 @@ const resetSearch = async () => {
 }
 
 const submitUser = async (form: any) => {
+  console.log('form :' + form)
   // await createUser(form)
   await openAlert('유저가 등록되었습니다.')
   showCreateModal.value = false
@@ -269,91 +271,124 @@ onMounted(() => {
 <!-- 탬플릿 Area -->
 <template>
   <div class="card">
-    <div class="font-semibold text-xl mb-4">유저 List</div>
-    <div class="custom-content">
+    <!-- 제목 + 검색 영역 -->
+    <div class="page-header">
+      <div class="page-title">유저 List</div>
+
       <!-- 검색 영역 -->
       <div class="search-bar">
-        <div class="form-grid cols-4">
-          <div class="flex flex-col gap-1">
+        <div class="form-grid cols-6">
+          <div class="form-field">
             <label for="userNo">유저ID</label>
-            <ElInputText 
-              v-model="searchForm.userNo" 
+            <ElInputText
+              v-model="searchForm.userNo"
               size="md"
-              type="text" />
+              type="text"
+            />
           </div>
-          <div class="flex flex-col gap-1">
+
+          <div class="form-field">
             <label for="name">이름</label>
-            <ElInputText 
-              v-model="searchForm.name" 
-              size="md" 
-              type="text" />
+            <ElInputText
+              v-model="searchForm.name"
+              size="md"
+              type="text"
+            />
           </div>
-          <div class="flex flex-col gap-1">
+
+          <div class="form-field">
             <label for="activeYn">탈퇴여부</label>
-            <ElSelectBox 
-              v-model="searchForm.activeYn" 
-              size="md" 
-              :options="activeOptions" 
-              class="w-full" />
+            <ElSelectBox
+              v-model="searchForm.activeYn"
+              size="md"
+              :options="activeOptions"
+              class="w-full"
+            />
           </div>
-          <div class="flex flex-col gap-1">
+
+          <div class="form-field">
+            <label for="genderFlag">성별</label>
+            <ElSelectBox
+              v-model="searchForm.genderFlag"
+              size="md"
+              :options="genderOptions"
+              class="w-full"
+            />
+          </div>
+
+          <div class="form-field">
             <label for="birthDate">생년월일</label>
-            <ElDatePicker 
-              v-model="searchForm.birthDate" 
-              size="md" 
-              showMonthYearSelect 
-              clearable />
+            <ElDatePicker
+              v-model="searchForm.birthDate"
+              size="md"
+              show-month-year-select
+              clearable
+            />
           </div>
         </div>
+
         <div class="search-actions">
-          <ElButton 
-            type="primary" 
-            size="md" 
+          <ElButton
+            type="primary"
+            size="md"
+            label="조회"
             @click="searchUsers"
-            label="조회" />
-          <ElButton 
-            type="secondary" 
-            size="md" 
+          />
+          <ElButton
+            type="secondary"
+            size="md"
+            label="초기화"
             @click="resetSearch"
-            label="초기화" />
+          />
         </div>
       </div>
-      <!-- 컨텐츠영역>제목/버튼 -->
+    </div>
+
+    <!-- 메인 컨텐츠 영역 -->
+    <div class="custom-content">
+      <!-- 컨텐츠 영역: 버튼 -->
       <div class="header-bar">
         <div class="action-bar">
-          <ElButton 
-            type="primary" 
-            size="md" 
+          <ElButton
+            type="primary"
+            size="md"
+            label="등록"
             @click="addUser"
-            label="등록" />
-          <ElButton 
-            type="danger" 
-            size="md" 
-            :disabled="checkedIds.length === 0 || loadingStore.isLoading" 
+          />
+          <ElButton
+            type="danger"
+            size="md"
+            :disabled="checkedIds.length === 0 || loadingStore.isLoading"
+            label="탈퇴"
             @click="retire"
-            label="탈퇴" />
-          <ElButton 
-            type="success" 
-            size="md" 
-            :disabled="checkedIds.length === 0 || loadingStore.isLoading" 
-            @click="restore" 
-            label="복구" />
+          />
+          <ElButton
+            type="success"
+            size="md"
+            :disabled="checkedIds.length === 0 || loadingStore.isLoading"
+            label="복구"
+            @click="restore"
+          />
         </div>
       </div>
+
       <!-- 공통 Tabulator Grid -->
-      <ElTabulatorGrid 
-        :data="users" 
-        :columns="columns" 
-        :options="gridOptions" 
-        index-field="userId" 
-        height="475px" 
-        @ready="onGridReady" 
-        @selection-change="onSelectionChange" />
+      <ElTabulatorGrid
+        :data="users"
+        :columns="columns"
+        :options="gridOptions"
+        index-field="userId"
+        height="475px"
+        @ready="onGridReady"
+        @selection-change="onSelectionChange"
+      />
     </div>
   </div>
+
   <!-- 유저등록 Popup -->
-  <UserCreatePopup 
-    v-if="showCreateModal" 
-    @submit="submitUser" 
-    @cancel="cancelCreate" />
+  <UserCreatePopup
+    v-if="showCreateModal"
+    @submit="submitUser"
+    @cancel="cancelCreate"
+  />
 </template>

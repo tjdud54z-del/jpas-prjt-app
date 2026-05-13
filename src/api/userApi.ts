@@ -7,8 +7,8 @@ import { http } from '@/api/common/http'
  * - READ_ONLY_API : 조회(Query) 전용 API (MyBatis)
  * - JPA_API       : 상태 변경(CUD)용 API (JPA 사용)
  */
-const READ_ONLY_API = '/api/query'
-const JPA_API = '/api/jpa'
+const READ_ONLY_API = '/api/query/users'
+const JPA_API = '/api/jpa/users'
 
 /**
  * ===============================
@@ -63,7 +63,7 @@ export interface UserSearchParam {
  * GET /api/query/users
  */
 export function fetchUsers() {
-  return http.get<User[]>(`${READ_ONLY_API}/users`)
+  return http.get<User[]>(`${READ_ONLY_API}`)
 }
 
 /**
@@ -75,7 +75,7 @@ export function fetchUsers() {
  * @param id 유저 ID
  */
 export function fetchUser(id: number) {
-  return http.get<User>(`${READ_ONLY_API}/users/${id}`)
+  return http.get<User>(`${READ_ONLY_API}/${id}`)
 }
 
 /**
@@ -86,8 +86,10 @@ export function fetchUser(id: number) {
  *
  * @param param 검색 조건 (사번, 이름, 재직여부)
  */
-export function fetchUsersByCondition(param: UserSearchParam) {
-  return http.post<User[]>(`${READ_ONLY_API}/users/search`, param)
+export function fetchUsersByCondition(
+  param: UserSearchParam
+) {
+  return http.post<User[]>(`${READ_ONLY_API}/search`, param)
 }
 
 /**
@@ -99,7 +101,7 @@ export function fetchUsersByCondition(param: UserSearchParam) {
  * @param params 공통파라미터
  */
 export function createUser(params: CommonParams) {
-  return http.post<number>(`${JPA_API}/users`, params)
+  return http.post<number>(`${JPA_API}`, params)
 }
 
 /**
@@ -111,7 +113,7 @@ export function createUser(params: CommonParams) {
  * @param params 공통파라미터
  */
 export function updateUser(params: CommonParams) {
-  return http.put<void>(`${JPA_API}/users`, params)
+  return http.put<void>(`${JPA_API}`, params)
 }
 
 /**
@@ -123,7 +125,7 @@ export function updateUser(params: CommonParams) {
  * @param userIds 사번 리스트
  */
 export function deleteUsers(userIds: number[]) {
-  return http.delete<void>(`${JPA_API}/users`, {
+  return http.delete<void>(`${JPA_API}`, {
     data: { userIds }
   })
 }
@@ -137,7 +139,7 @@ export function deleteUsers(userIds: number[]) {
  * @param userIds 퇴사 처리할 유저 ID 목록
  */
 export function retireUsers(userIds: number[]) {
-  return http.put<void>(`${JPA_API}/users/retire`, {
+  return http.put<void>(`${JPA_API}/retire`, {
     userIds
   })
 }
@@ -151,7 +153,7 @@ export function retireUsers(userIds: number[]) {
  * @param userIds 복직 처리할 유저 ID 목록
  */
 export function restoreUsers(userIds: number[]) {
-  return http.put<void>(`${JPA_API}/users/restore`, {
+  return http.put<void>(`${JPA_API}/restore`, {
     userIds
   })
 }

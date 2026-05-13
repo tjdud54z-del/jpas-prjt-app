@@ -5,16 +5,13 @@ import { http } from '@/api/common/http'
  * ======================= */
 export interface DmConversationListItem {
   conversationId: number
-
   peerUserId: number // camelCase 통일
   peerUserNo: string
   peerUserName: string
-
   lastMessageId: number | null
   lastMessageAt: string | null
   lastMessage: string | null
   lastSenderId: number | null
-
   unreadCount: number
 }
 
@@ -27,7 +24,6 @@ export interface DmMessageRow {
   senderUserNo: any
   messageId: number
   conversationId: number
-
   senderId: number // 백엔드 기준 (store에서 변환)
   body: string
   sentAt: string
@@ -54,35 +50,66 @@ export type SendDmMessageRes = {
 /* =======================
  * (R) 대화 목록: 커서 페이징
  * ======================= */
-export const fetchDmConversations = (params: { userId?: number; size?: number; cursorAt?: string; cursorId?: number }) => {
-  return http.get<DmConversationListItem[]>('/api/dm/conversations', { params })
+export const fetchDmConversations = (params: {
+  userId?: number
+  size?: number
+  cursorAt?: string
+  cursorId?: number
+}) => {
+  return http.get<DmConversationListItem[]>(
+    '/api/dm/conversations',
+    { params }
+  )
 }
 
 /* =======================
  * (C) 대화방 열기 (없으면 생성)
  * ======================= */
-export const openConversation = (params: { senderId: number; receiverId: number }) => {
-  return http.post<{ conversationId: number }>('/api/dm/conversations', params)
+export const openConversation = (params: {
+  senderId: number
+  receiverId: number
+}) => {
+  return http.post<{ conversationId: number }>(
+    '/api/dm/conversations',
+    params
+  )
 }
 
 /* =======================
  * (C) 메시지 전송 (없으면 생성)
  * ======================= */
 export const sendDmMessage = (req: SendDmMessageReq) => {
-  return http.post<SendDmMessageRes>('/api/dm/messages', req)
+  return http.post<SendDmMessageRes>(
+    '/api/dm/messages',
+    req
+  )
 }
 
 /* =======================
  * (R) 메시지 히스토리
  * - messageId DESC 커서 페이징
  * ======================= */
-export const fetchDmMessages = (params: { conversationId?: number; size?: number; userId?: number; cursorMessageId?: number }) => {
-  return http.post<DmMessageRow[]>(`/api/dm/conversations/messages`, params)
+export const fetchDmMessages = (params: {
+  conversationId?: number
+  size?: number
+  userId?: number
+  cursorMessageId?: number
+}) => {
+  return http.post<DmMessageRow[]>(
+    `/api/dm/conversations/messages`,
+    params
+  )
 }
 
 /* =======================
  * (U) 읽음 처리
  * ======================= */
-export const markConversationRead = (conversationId: number, userId: number) => {
-  return http.post(`/api/dm/conversations/${conversationId}/read`, { userId })
+export const markConversationRead = (
+  conversationId: number,
+  userId: number
+) => {
+  return http.post(
+    `/api/dm/conversations/${conversationId}/read`,
+    { userId }
+  )
 }
