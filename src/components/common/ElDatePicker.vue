@@ -15,7 +15,7 @@ interface Props {
   invalid?: boolean
   clearable?: boolean
 
-  /** ✅ 옵션1: 연/월 드롭다운 표시 */
+  /** 옵션1: 연/월 드롭다운 표시 */
   showMonthYearSelect?: boolean
 
   /** min/max 없을 때 연도 범위(현재년도 기준 ± range) */
@@ -143,7 +143,7 @@ const triggerClass = computed(() => ['dp-wrap', `dp-${props.size}`, open.value ?
 
 const displayText = computed(() => (props.modelValue ? props.modelValue : props.placeholder))
 
-/* ---------------- ✅ Year/Month options (Option1) ---------------- */
+/* ---------------- Year/Month options (Option1) ---------------- */
 const yearOptions = computed(() => {
   const minY = minDate.value?.getFullYear()
   const maxY = maxDate.value?.getFullYear()
@@ -372,7 +372,7 @@ function clearValue(e?: MouseEvent) {
 }
 
 function goPrevMonth() {
-  // ✅ 연/월 셀렉터가 켜져도 동일 동작
+  // 연/월 셀렉터가 켜져도 동일 동작
   viewMonth.value = startOfMonth(addMonths(viewMonth.value, -1))
 }
 function goNextMonth() {
@@ -475,7 +475,7 @@ function onKeydown(e: KeyboardEvent) {
           <div class="dp-head">
             <button class="dp-nav" type="button" @mousedown.prevent @click="goPrevMonth" aria-label="prev">‹</button>
 
-            <!-- ✅ 옵션1: 연/월 셀렉터 -->
+            <!-- 옵션1: 연/월 셀렉터 -->
             <template v-if="showMonthYearSelect">
               <div class="dp-ym">
                 <select class="dp-ym-select" :value="selectedYear" @change="onYearChange">
@@ -660,7 +660,7 @@ function onKeydown(e: KeyboardEvent) {
   background: #f3f4f7;
 }
 
-/* ✅ Year/Month select group */
+/* Year/Month select group */
 .dp-ym {
   display: flex;
   align-items: center;

@@ -1,21 +1,17 @@
+
 <script setup lang="ts">
-import { ref, onMounted, onBeforeUnmount, watch, computed, toRaw } from 'vue'
-import { TabulatorFull as Tabulator } from 'tabulator-tables' // Vue3 예시에서 TabulatorFull 사용
+import { TabulatorFull as Tabulator } from 'tabulator-tables'
+import 'tabulator-tables/dist/css/tabulator.min.css'
+import { computed, onBeforeUnmount, onMounted, ref, toRaw, watch } from 'vue'
 
 type RowData = Record<string, any>
 
 interface Props {
-  /** 표시할 데이터 */
   data: RowData[]
-  /** Tabulator columns 설정 */
   columns: any[]
-  /** Tabulator options 추가(필요한 것만 덮어쓰기) */
   options?: Record<string, any>
-  /** row 선택 기능 사용 여부 */
   selectable?: boolean
-  /** unique key field (선택/업데이트/행 구분용) */
   indexField?: string
-  /** height 지정 시 Virtual DOM 활성화(성능/스크롤 유지에 도움) */
   height?: string | number
 }
 
@@ -26,10 +22,10 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const emit = defineEmits<{
-  /** 선택된 row data 배열 */
   (e: 'selection-change', rows: RowData[]): void
-  /** tabulator instance 외부에서 쓰고 싶을 때 */
   (e: 'ready', table: any): void
+  (e: 'cell-edited', payload: { row: RowData; field: string; value: any; oldValue?: any }): void
+  (e: 'row-click', payload: { row: any; event: MouseEvent }): void
 }>()
 
 const tableEl = ref<HTMLElement | null>(null)
@@ -39,25 +35,38 @@ const mergedOptions = computed(() => {
   const base: Record<string, any> = {
     data: props.data,
     columns: props.columns,
-    reactiveData: true,
+    reactiveData: true,        // 유지
     layout: 'fitColumns',
     index: props.indexField,
-    selectableRows: props.selectable ? true : false, // 핵심: 다중 선택 허용
-    // selectableRowsRangeMode: 'click', //  // 쉬프트 범위 선택 방식 (문서에 range mode 언급)
+    selectableRows: props.selectable ? true : false,
   }
 
   if (props.height) base.height = props.height
-
   return { ...base, ...props.options }
 })
 
 const init = () => {
   if (!tableEl.value) return
-  table.value = new Tabulator(tableEl.value, mergedOptions.value) // Tabulator 생성 방식
 
-  // 선택 이벤트 (Tabulator는 rowSelectionChanged 콜백 패턴이 흔함)
+  table.value = new Tabulator(tableEl.value, mergedOptions.value)
+
   table.value.on('rowSelectionChanged', (data: RowData[]) => {
     emit('selection-change', data)
+  })
+
+  table.value.on('cellEdited', (cell: any) => {
+    emit('cell-edited', {
+      row: cell.getRow().getData(),
+      field: cell.getField(),
+      value: cell.getValue(),
+      oldValue: cell.getOldValue?.(),
+    })
+  })
+
+  table.value.on('rowClick', (e: MouseEvent, row: any) => {
+    const target = e.target as HTMLElement
+    if (target.closest('.tabulator-editing')) return
+    emit('row-click', { row, event: e })
   })
 
   emit('ready', table.value)
@@ -71,25 +80,25 @@ const destroy = () => {
 }
 
 onMounted(() => init())
-
 onBeforeUnmount(() => destroy())
 
 /**
- * data 변경 반영
- * reactiveData:true면 push/splice 등의 변경은 자동 반영되지만,
- * "통째로 새 배열로 교체"되는 케이스는 setData/replaceData가 더 확실합니다.
- * Tabulator는 setData/replaceData 등으로 데이터 교체가 가능
+ * FIX #1
+ * - deep watch 제거
+ * - 배열 "참조가 바뀌었을 때만" replaceData 실행
+ * - Tabulator addRow/delete 중에 replaceData가 끼어드는 레이스 방지
  */
 watch(
   () => props.data,
-  (val) => {
+  (val, oldVal) => {
     if (!table.value) return
-    table.value.replaceData(toRaw(val)) // 스크롤/정렬 유지에 유리한 replaceData
+    if (val === oldVal) return
+    table.value.replaceData(toRaw(val))
   },
-  { deep: true }
+  { deep: false }
 )
 
-/** columns 변경 시 재초기화(컬럼 구조 변경은 destroy/init가 안전) */
+/** columns 변경 시 재초기화 */
 watch(
   () => props.columns,
   () => {

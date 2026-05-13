@@ -11,7 +11,7 @@ const props = withDefaults(
     size?: ButtonSize
     disabled?: boolean
 
-    /** ✅ 버튼 텍스트 */
+    /** 버튼 텍스트 */
     label?: string
   }>(),
   {
