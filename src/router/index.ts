@@ -33,27 +33,32 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'users',
         name: 'users',
-        component: () => import('@/views/pages/user/UserList.vue')
+        component: () =>
+          import('@/views/pages/user/UserList.vue')
       },
       {
         path: 'users/create',
         name: 'userCreate',
-        component: () => import('@/views/pages/user/UserCreate.vue')
+        component: () =>
+          import('@/views/pages/user/UserCreate.vue')
       },
       {
         path: 'dm',
         name: 'DmPage',
-        component: () => import('@/views/pages/dm/DmPage.vue')
+        component: () =>
+          import('@/views/pages/dm/DmPage.vue')
       },
       {
         path: 'dmManage',
         name: 'dmManage',
-        component: () => import('@/views/pages/dm/DmManager.vue')
+        component: () =>
+          import('@/views/pages/dm/DmManager.vue')
       },
       {
         path: 'commonCodes',
         name: 'commonCodes',
-        component: () => import('@/views/pages/CommonCodeList.vue')
+        component: () =>
+          import('@/views/pages/cmmnCd/CommonCodeList.vue')
       },
       {
         path: 'dashboard',
@@ -63,22 +68,26 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'uikit/formlayout',
         name: 'formlayout',
-        component: () => import('@/views/uikit/FormLayout.vue')
+        component: () =>
+          import('@/views/uikit/FormLayout.vue')
       },
       {
         path: 'uikit/input',
         name: 'input',
-        component: () => import('@/views/uikit/InputDoc.vue')
+        component: () =>
+          import('@/views/uikit/InputDoc.vue')
       },
       {
         path: 'uikit/button',
         name: 'button',
-        component: () => import('@/views/uikit/ButtonDoc.vue')
+        component: () =>
+          import('@/views/uikit/ButtonDoc.vue')
       },
       {
         path: 'uikit/table',
         name: 'table',
-        component: () => import('@/views/uikit/TableDoc.vue')
+        component: () =>
+          import('@/views/uikit/TableDoc.vue')
       },
       {
         path: 'uikit/list',
@@ -93,22 +102,26 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'uikit/panel',
         name: 'panel',
-        component: () => import('@/views/uikit/PanelsDoc.vue')
+        component: () =>
+          import('@/views/uikit/PanelsDoc.vue')
       },
       {
         path: 'uikit/overlay',
         name: 'overlay',
-        component: () => import('@/views/uikit/OverlayDoc.vue')
+        component: () =>
+          import('@/views/uikit/OverlayDoc.vue')
       },
       {
         path: 'uikit/media',
         name: 'media',
-        component: () => import('@/views/uikit/MediaDoc.vue')
+        component: () =>
+          import('@/views/uikit/MediaDoc.vue')
       },
       {
         path: 'uikit/message',
         name: 'message',
-        component: () => import('@/views/uikit/MessagesDoc.vue')
+        component: () =>
+          import('@/views/uikit/MessagesDoc.vue')
       },
       {
         path: 'uikit/file',
@@ -123,7 +136,8 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'uikit/charts',
         name: 'charts',
-        component: () => import('@/views/uikit/ChartDoc.vue')
+        component: () =>
+          import('@/views/uikit/ChartDoc.vue')
       },
       {
         path: 'uikit/misc',
@@ -133,7 +147,8 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'uikit/timeline',
         name: 'timeline',
-        component: () => import('@/views/uikit/TimelineDoc.vue')
+        component: () =>
+          import('@/views/uikit/TimelineDoc.vue')
       },
       {
         path: 'blocks/free',
@@ -141,7 +156,8 @@ const routes: RouteRecordRaw[] = [
         meta: {
           breadcrumb: ['Prime Blocks', 'Free Blocks']
         },
-        component: () => import('@/views/utilities/Blocks.vue')
+        component: () =>
+          import('@/views/utilities/Blocks.vue')
       },
       {
         path: 'pages/empty',
@@ -156,7 +172,8 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'start/documentation',
         name: 'documentation',
-        component: () => import('@/views/pages/Documentation.vue')
+        component: () =>
+          import('@/views/pages/Documentation.vue')
       }
     ]
   },
