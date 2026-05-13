@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed } from 'vue';
 
 type InputType = 'text' | 'password' | 'email' | 'number' | 'search' | 'tel' | 'url'
 type InputSize = 'sm' | 'md' | 'lg'
@@ -19,7 +19,7 @@ const props = withDefaults(
     name?: string
     id?: string
 
-    /** ✅ label 추가 */
+    /** label 추가 */
     label?: string
 
     /** UI 옵션 */
@@ -38,7 +38,7 @@ const props = withDefaults(
   {
     modelValue: '',
     type: 'text',
-    placeholder: '',
+    placeholder: '입력',
     disabled: false,
     readonly: false,
     autocomplete: 'off',
@@ -47,7 +47,7 @@ const props = withDefaults(
     variant: 'primary',
     invalid: false,
     mb: 12,
-    width: '100%',
+    width: '100%'
   }
 )
 
@@ -61,14 +61,7 @@ const emit = defineEmits<{
   (e: 'enter', value: string): void
 }>()
 
-const inputClass = computed(() => [
-  'input',
-  `input-${props.variant}`,
-  `input-${props.size}`,
-  props.invalid ? 'is-invalid' : '',
-  props.disabled ? 'is-disabled' : '',
-  props.readonly ? 'is-readonly' : '',
-])
+const inputClass = computed(() => ['input', `input-${props.variant}`, `input-${props.size}`, props.invalid ? 'is-invalid' : '', props.disabled ? 'is-disabled' : '', props.readonly ? 'is-readonly' : ''])
 
 const valueAsString = computed(() => String(props.modelValue ?? ''))
 
@@ -79,7 +72,7 @@ const widthCss = computed(() => {
 
 const inputStyle = computed(() => ({
   width: widthCss.value,
-  marginBottom: props.label ? undefined : `${props.mb}px`, // ✅ label 있으면 margin form-field에서 처리
+  marginBottom: props.label ? undefined : `${props.mb}px` // label 있으면 margin form-field에서 처리
 }))
 
 function onInput(e: Event) {
@@ -123,17 +116,16 @@ function onKeydown(e: KeyboardEvent) {
       @change="onChange"
       @focus="emit('focus', $event)"
       @blur="emit('blur', $event)"
-      @keydown="onKeydown"
-    />
+      @keydown="onKeydown" />
   </div>
 </template>
 
 <style scoped>
-/* ✅ form-grid / ElSelectBox / ElDatePicker와 동일 */
+/* form-grid / ElSelectBox / ElDatePicker와 동일 */
 .form-field {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 4px;
   margin-bottom: 12px;
 }
 
@@ -156,14 +148,42 @@ function onKeydown(e: KeyboardEvent) {
   box-shadow: 0 0 0 3px rgba(76, 125, 255, 0.15);
 }
 
-.input-sm { padding: 6px 8px; font-size: 12px; }
-.input-md { padding: 8px 10px; font-size: 14px; }
-.input-lg { padding: 10px 12px; font-size: 16px; }
+.input-sm {
+  padding: 4px 8px;
+  font-size: 12px;
+  line-height: 1.2;
+  min-height: 30px;
+}
 
-.input-success { border-color: #12b76a; }
-.input-danger { border-color: #f04438; }
+.input-md {
+  padding: 6px 10px;
+  font-size: 14px;
+  line-height: 1.3;
+  min-height: 34px;
+}
 
-.is-invalid { border-color: #f04438; }
-.is-disabled { background: #f2f4f7; cursor: not-allowed; }
-.is-readonly { background: #f9fafb; }
+.input-lg {
+  padding: 8px 12px;
+  font-size: 16px;
+  line-height: 1.4;
+  min-height: 38px;
+}
+
+.input-success {
+  border-color: #12b76a;
+}
+.input-danger {
+  border-color: #f04438;
+}
+
+.is-invalid {
+  border-color: #f04438;
+}
+.is-disabled {
+  background: #f2f4f7;
+  cursor: not-allowed;
+}
+.is-readonly {
+  background: #f9fafb;
+}
 </style>

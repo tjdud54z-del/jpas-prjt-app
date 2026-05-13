@@ -1,15 +1,15 @@
-import { http } from '@/api/common/http'
+import { http } from '@/api/common/http';
 
 /**
  * ===============================
  * 로그인 요청 DTO
  * ===============================
- * - employeeNo : 사번 (또는 로그인 ID)
+ * - userNo : 사번 (또는 로그인 ID)
  * - password   : 비밀번호
  */
 export interface LoginRequest {
-  employeeNo: string
-  password: string
+  userNo: string;
+  password: string;
 }
 
 /**
@@ -22,10 +22,10 @@ export interface LoginRequest {
  * - expiresInSeconds  : 토큰 만료 시간(초 단위)
  */
 export interface LoginResponse {
-  userInfo: any
-  tokenType: string   // "Bearer"
-  accessToken: string
-  expiresInSeconds: number // 1800 (30분)
+  userInfo: any;
+  tokenType: string; // "Bearer"
+  accessToken: string;
+  expiresInSeconds: number; // 1800 (30분)
 }
 
 /**
@@ -40,5 +40,5 @@ export interface LoginResponse {
  * @returns Axios Promise<LoginResponse>
  */
 export const loginApi = (payload: LoginRequest) => {
-  return http.post<LoginResponse>('/api/auth/login', payload)
-}
+  return http.post<LoginResponse>('/api/auth/login', payload);
+};

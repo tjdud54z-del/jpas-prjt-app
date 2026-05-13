@@ -1,4 +1,3 @@
-
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute } from 'vue-router'
@@ -16,22 +15,17 @@ const userInfo = computed(() => {
 })
 </script>
 
-
 <template>
   <aside class="sidebar">
     <!-- 상단 로고 영역 -->
     <div class="logo-area">
-      <img
-        src="@/assets/main-logo.png"
-        alt="관리자"
-        class="profile-image"
-      />
+      <img src="@/assets/main-logo.png" alt="관리자" class="profile-image" />
       <h3 class="logo-text">JPAS 관리시스템</h3>
     </div>
     <!-- 메뉴 영역 -->
     <ul class="menu">
-      <li :class="{ active: isActive('/employees') }">
-        <router-link to="/employees">직원관리</router-link>
+      <li :class="{ active: isActive('/users') }">
+        <router-link to="/users">유저관리</router-link>
       </li>
       <li :class="{ active: isActive('/departments') }">
         <router-link to="/departments">부서관리</router-link>
@@ -42,7 +36,6 @@ const userInfo = computed(() => {
     </ul>
   </aside>
 </template>
-
 
 <style scoped>
 .sidebar {
@@ -61,8 +54,8 @@ const userInfo = computed(() => {
 /* 로고 영역 */
 .logo-area {
   display: flex;
-  align-items: center;        /* 이미지 + 텍스트 수직 중앙정렬 */
-  gap: 12px;                  /* 이미지와 텍스트 간격 */
+  align-items: center; /* 이미지 + 텍스트 수직 중앙정렬 */
+  gap: 12px; /* 이미지와 텍스트 간격 */
   margin-bottom: 32px;
 }
 
@@ -80,14 +73,14 @@ const userInfo = computed(() => {
   font-size: 16px;
   font-weight: bold;
   font-family: 'Courier New', Courier, monospace;
-  white-space: nowrap;        /* 줄바꿈 방지 (사이드바 좁을 때 유용) */
+  white-space: nowrap; /* 줄바꿈 방지 (사이드바 좁을 때 유용) */
 }
 
 /* 메뉴 */
 .menu {
   list-style: none;
   padding: 0;
-  margin-top: 20px
+  margin-top: 20px;
 }
 
 .menu li {
@@ -105,6 +98,4 @@ const userInfo = computed(() => {
 .menu li.active a {
   background: #4f46e5;
 }
-
 </style>
-

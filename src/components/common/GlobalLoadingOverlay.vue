@@ -1,13 +1,3 @@
-<template>
-  <div v-if="isLoading" class="overlay">
-    <img
-      src="@/assets/loadingBar2-96.gif"
-      alt="loading"
-      class="spinner"
-    />
-  </div>
-</template>
-
 <script setup lang="ts">
 import { useLoadingStore } from '@/store/loadingStore'
 import { storeToRefs } from 'pinia'
@@ -15,6 +5,12 @@ import { storeToRefs } from 'pinia'
 const loadingStore = useLoadingStore()
 const { isLoading } = storeToRefs(loadingStore)
 </script>
+
+<template>
+  <div v-if="isLoading" class="overlay">
+    <img src="@/assets/loadingBar2-96.gif" alt="loading" class="spinner" />
+  </div>
+</template>
 
 <style scoped>
 /* 전체 화면 어둡게 덮기 */

@@ -1,23 +1,47 @@
-
 <script setup lang="ts">
-import { computed } from 'vue'
 import { useAlert } from '@/composables/useAlert'
 import { useConfirm } from '@/composables/useConfirm'
-
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 const alertModal = useAlert()
 const confirmModal = useConfirm()
 
-const isShow = computed(
-  () => alertModal.isShow.value || confirmModal.isShow.value
-)
+const isShow = computed(() => alertModal.isShow.value || confirmModal.isShow.value)
 
-const message = computed(() =>
-  alertModal.isShow.value
-    ? alertModal.message.value
-    : confirmModal.message.value
-)
+const message = computed(() => (alertModal.isShow.value ? alertModal.message.value : confirmModal.message.value))
 
 const isConfirm = computed(() => confirmModal.isShow.value)
+
+const confirmBtnRef = ref<HTMLButtonElement | null>(null)
+
+const onKeydown = (e) => {
+  if (!isShow.value) return
+
+  if (e.key === 'Enter') {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (isConfirm.value) {
+      confirmModal.resolver(true)
+    } else {
+      alertModal.resolver()
+    }
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('keydown', onKeydown)
+})
+
+watch(isShow, async (show) => {
+  if (show) {
+    await nextTick()
+    confirmBtnRef.value?.focus()
+  }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', onKeydown)
+})
 </script>
 
 <template>
@@ -28,24 +52,13 @@ const isConfirm = computed(() => confirmModal.isShow.value)
         <div class="confirm-message">
           {{ message }}
         </div>
-
         <div class="actions">
           <!-- Alert -->
-          <button
-            v-if="!isConfirm"
-            @click="alertModal.resolver()"
-          >
-            확인
-          </button>
-
+          <Button v-if="!isConfirm" label="확인" tabindex="0" Raised @click="alertModal.resolver()" />
           <!-- Confirm -->
           <template v-else>
-            <button @click="confirmModal.resolver(true)">
-              확인
-            </button>
-            <button @click="confirmModal.rejecter(false)">
-              취소
-            </button>
+            <Button label="취소" severity="secondary" Raised @click="confirmModal.rejecter(false)" />
+            <Button label="확인" tabindex="0" Raised @click="confirmModal.resolver(true)" />
           </template>
         </div>
       </div>
@@ -74,7 +87,7 @@ const isConfirm = computed(() => confirmModal.isShow.value)
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 9999;
+  z-index: 9998;
 }
 
 /* 모달 박스 */
@@ -111,6 +124,6 @@ const isConfirm = computed(() => confirmModal.isShow.value)
   font-size: 24px;
   font-weight: bold;
   font-family: 'Courier New', Courier, monospace;
-  white-space: nowrap;        /* 줄바꿈 방지 (사이드바 좁을 때 유용) */
+  white-space: nowrap; /* 줄바꿈 방지 (사이드바 좁을 때 유용) */
 }
 </style>
