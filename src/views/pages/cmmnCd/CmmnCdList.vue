@@ -1,10 +1,17 @@
 <script setup lang="ts">
-import { fetchCmmnCdByCondition, fetchCmmnCdDtlByCondition } from '@/api/cmmnCdApi'
+import { fetchCmmnCdByCondition, fetchCmmnCdDtlByCondition, saveCommonCodeDtls, saveCommonCodes } from '@/api/cmmnCdApi'
 import ElButton from '@/components/common/ElButton.vue'
 import ElInputText from '@/components/common/ElInputText.vue'
 import ElTabulatorGrid from '@/components/common/ElTabulatorGrid.vue'
 import { useAlert } from '@/composables/useAlert'
-import { nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { useConfirm } from '@/composables/useConfirm'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+
+/** 로그인 사용자 정보 */
+const userInfo = computed(() => {
+  const raw = localStorage.getItem('userInfo');
+  return raw ? JSON.parse(raw) : null;
+});
 
 /** 상태 타입 지정 */
 type RowState = 'I' | 'U' | 'D' | null
@@ -19,6 +26,7 @@ interface CommonCode {
 
 /** 공통 알림창 */
 const { openAlert } = useAlert()
+const { openConfirm } = useConfirm();
 
 /** 공통코드 클릭 셀 강조용 */
 const activeCommonCodeKey = ref<string | null>(null)
@@ -84,7 +92,7 @@ const stableStringify = (obj: any) => JSON.stringify(obj, Object.keys(obj).sort(
  * strip meta before sending API
  * ====================== */
 const stripMeta = (row: any) => {
-  // const { __rowKey, __rowState, __badge, ...rest } = row
+  // const { keyName, state, __badge, ...rest } = row
   const { ...rest } = row
   return rest
 }
@@ -132,7 +140,7 @@ const setRowStateByKey = (table: any, rowKey: string, state: RowState) => {
   const r = table?.getRow?.(rowKey)
   if (!r) return
   const d = r.getData()
-  r.update({ ...d, __rowState: state })
+  r.update({ ...d, state: state })
   r.reformat?.()
 }
 
@@ -151,7 +159,7 @@ const commonGridOptions = {
     el.style.textDecoration = ''
     el.style.opacity = '1'
 
-    const st: RowState = d.__rowState ?? null
+    const st: RowState = d.state ?? null
     if (st === 'D') {
       el.style.backgroundColor = '#F3F4F6'
       el.style.textDecoration = 'line-through'
@@ -174,7 +182,7 @@ const detailGridOptions = {
     el.style.textDecoration = ''
     el.style.opacity = '1'
 
-    const st: RowState = d.__rowState ?? null
+    const st: RowState = d.state ?? null
     if (st === 'D') {
       el.style.backgroundColor = '#F3F4F6'
       el.style.textDecoration = 'line-through'
@@ -192,8 +200,8 @@ const detailGridOptions = {
  * ====================== */
 const markDeleteCommon = async (rowComp: any) => {
   const data = rowComp.getData()
-  const key = data.__rowKey
-  const st: RowState = data.__rowState ?? null
+  const key = data.keyName
+  const st: RowState = data.state ?? null
 
   // 신규(I) → 테이블 레벨 deleteRow로 실제 제거 (rowComp.delete() 지양)
   if (st === 'I') {
@@ -227,16 +235,16 @@ const markDeleteCommon = async (rowComp: any) => {
   }
 
   // 기존 → D 마킹
-  deletedCommonMap.value.set(key, { ...data, __rowState: 'D' })
+  deletedCommonMap.value.set(key, { ...data, state: 'D' })
   updatedCommonMap.value.delete(key)
-  rowComp.update({ ...data, __rowState: 'D' })
+  rowComp.update({ ...data, state: 'D' })
   rowComp.reformat?.()
   redrawOnce(commonTable.value)
 }
 
 const restoreCommon = (rowComp: any) => {
   const data = rowComp.getData()
-  const key = data.__rowKey
+  const key = data.keyName
 
   deletedCommonMap.value.delete(key)
 
@@ -245,10 +253,10 @@ const restoreCommon = (rowComp: any) => {
 
   if (original && original === current) {
     updatedCommonMap.value.delete(key)
-    rowComp.update({ ...data, __rowState: null })
+    rowComp.update({ ...data, state: null })
   } else {
-    updatedCommonMap.value.set(key, { ...data, __rowState: 'U' })
-    rowComp.update({ ...data, __rowState: 'U' })
+    updatedCommonMap.value.set(key, { ...data, state: 'U' })
+    rowComp.update({ ...data, state: 'U' })
   }
 
   rowComp.reformat?.()
@@ -257,8 +265,8 @@ const restoreCommon = (rowComp: any) => {
 
 const markDeleteDtl = async (rowComp: any) => {
   const data = rowComp.getData()
-  const key = data.__rowKey
-  const st: RowState = data.__rowState ?? null
+  const key = data.keyName
+  const st: RowState = data.state ?? null
 
   // 신규(I) → 테이블 레벨 deleteRow로 실제 제거
   if (st === 'I') {
@@ -290,16 +298,16 @@ const markDeleteDtl = async (rowComp: any) => {
   }
 
   // 기존 → D 마킹
-  deletedDtlMap.value.set(key, { ...data, __rowState: 'D' })
+  deletedDtlMap.value.set(key, { ...data, state: 'D' })
   updatedDtlMap.value.delete(key)
-  rowComp.update({ ...data, __rowState: 'D' })
+  rowComp.update({ ...data, state: 'D' })
   rowComp.reformat?.()
   redrawOnce(detailTable.value)
 }
 
 const restoreDtl = (rowComp: any) => {
   const data = rowComp.getData()
-  const key = data.__rowKey
+  const key = data.keyName
 
   deletedDtlMap.value.delete(key)
 
@@ -308,10 +316,10 @@ const restoreDtl = (rowComp: any) => {
 
   if (original && original === current) {
     updatedDtlMap.value.delete(key)
-    rowComp.update({ ...data, __rowState: null })
+    rowComp.update({ ...data, state: null })
   } else {
-    updatedDtlMap.value.set(key, { ...data, __rowState: 'U' })
-    rowComp.update({ ...data, __rowState: 'U' })
+    updatedDtlMap.value.set(key, { ...data, state: 'U' })
+    rowComp.update({ ...data, state: 'U' })
   }
 
   rowComp.reformat?.()
@@ -327,8 +335,8 @@ const addCommonRow = async () => {
 
   const key = `NEW_${Date.now()}`
   const newRow: any = {
-    __rowKey: key,
-    __rowState: 'I',
+    keyName: key,
+    state: 'I',
     commonCode: '',
     commonCodeName: '',
     activeYn: 'Y',
@@ -341,6 +349,9 @@ const addCommonRow = async () => {
   commonTable.value.addRow(newRow, true).then((rowComp: any) => {
     insertedCommonMap.value.set(key, rowComp.getData())
     rowComp.reformat?.()
+
+    rowComp.getCell('commonCode')?.edit()
+
     redrawOnce(commonTable.value)
   })
 }
@@ -358,8 +369,8 @@ const addDtlRow = async () => {
 
   const key = `NEW_${Date.now()}`
   const newRow: any = {
-    __rowKey: key,
-    __rowState: 'I',
+    keyName: key,
+    state: 'I',
     commonCode: selectedCommonCode.value.commonCode,
     commonCodeDtl: '',
     commonCodeDtlName: '',
@@ -390,7 +401,7 @@ const deleteSelectedCommon = async () => {
   }
 
   for (const row of selected) {
-    const st: RowState = row.getData().__rowState ?? null
+    const st: RowState = row.getData().state ?? null
     if (st === 'D') continue
     await markDeleteCommon(row)
   }
@@ -415,7 +426,7 @@ const restoreSelectedCommon = async () => {
   }
 
   for (const row of selected) {
-    const st: RowState = row.getData().__rowState ?? null
+    const st: RowState = row.getData().state ?? null
     if (st !== 'D') continue
     restoreCommon(row)
   }
@@ -439,7 +450,7 @@ const deleteSelectedDtl = async () => {
   }
 
   for (const row of selected) {
-    const st: RowState = row.getData().__rowState ?? null
+    const st: RowState = row.getData().state ?? null
     if (st === 'D') continue
     await markDeleteDtl(row)
   }
@@ -463,7 +474,7 @@ const restoreSelectedDtl = async () => {
   }
 
   for (const row of selected) {
-    const st: RowState = row.getData().__rowState ?? null
+    const st: RowState = row.getData().state ?? null
     if (st !== 'D') continue
     restoreDtl(row)
   }
@@ -499,14 +510,20 @@ const selectionColumn = {
  * ====================== */
 const onClickCommonCodeToLoadDetails = (e: any, cell: any) => {
   e.stopPropagation()
+
   const rowData = cell.getRow().getData()
   if (!rowData?.commonCode) return
 
-  activeCommonCodeKey.value = rowData.__rowKey
+  if (rowData.state === 'I') {
+    return
+  }
+
+  activeCommonCodeKey.value = rowData.keyName
   redrawOnce(commonTable.value)
 
   loadDetails(rowData)
 }
+
 
 /* ======================
  * columns: COMMON / DTL
@@ -522,7 +539,7 @@ const commonCodeColumns = [
     headerHozAlign: 'center',
     formatter: (cell: any) => {
       const d = cell.getRow().getData()
-      const st: RowState = d.__rowState ?? null
+      const st: RowState = d.state ?? null
       if (st === 'I') return `<span class="badge-pill badge-insert">신규</span>`
       if (st === 'U') return `<span class="badge-pill badge-update">수정</span>`
       if (st === 'D') return `<span class="badge-pill badge-delete">삭제</span>`
@@ -537,13 +554,13 @@ const commonCodeColumns = [
     editor: 'input',
     headerHozAlign: 'center',
     editable: (cell: any) => {
-      const st: RowState = cell.getRow().getData().__rowState ?? null
-      return allowEditCommonCode.value && st === 'I'
+      const st: RowState = cell.getRow().getData().state ?? null
+      return st === 'I'
     },
     formatter: (cell: any) => {
       const rowData = cell.getRow().getData()
       const value = cell.getValue()
-      const isActive = rowData.__rowKey === activeCommonCodeKey.value
+      const isActive = rowData.keyName === activeCommonCodeKey.value
       return `
         <span style="
           width:100%;
@@ -567,7 +584,7 @@ const commonCodeColumns = [
     headerSort: false, 
     editor: 'input', 
     headerHozAlign: 'center',
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   {
     title: '사용여부',
@@ -579,7 +596,7 @@ const commonCodeColumns = [
     editorParams: { values: { Y: '사용', N: '미사용' }, clearable: false },
     formatter: 'lookup',
     formatterParams: { Y: '사용', N: '미사용' },
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '순서', 
@@ -589,7 +606,7 @@ const commonCodeColumns = [
     editor: 'number', 
     hozAlign: 'right',
     headerHozAlign: 'center',
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '설명', 
@@ -598,7 +615,7 @@ const commonCodeColumns = [
     headerSort: false, 
     editor: 'input', 
     headerHozAlign: 'center',
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '속성1', 
@@ -607,7 +624,7 @@ const commonCodeColumns = [
     editor: 'input', 
     headerSort: false, 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D' 
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D' 
   },
   { 
     title: '속성2', 
@@ -616,7 +633,7 @@ const commonCodeColumns = [
     editor: 'input', 
     headerSort: false, 
     headerHozAlign: 'center',
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '속성3', 
@@ -625,7 +642,7 @@ const commonCodeColumns = [
     editor: 'input', 
     headerSort: false, 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '속성4', 
@@ -634,7 +651,7 @@ const commonCodeColumns = [
     editor: 'input', 
     headerSort: false, 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '속성5', 
@@ -643,7 +660,7 @@ const commonCodeColumns = [
     editor: 'input',
     headerSort: false, 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '속성6', 
@@ -652,7 +669,7 @@ const commonCodeColumns = [
     editor: 'input',
     headerSort: false,
     headerHozAlign: 'center',
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '속성7', 
@@ -661,7 +678,7 @@ const commonCodeColumns = [
     editor: 'input', 
     headerSort: false,
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '속성8', 
@@ -670,7 +687,7 @@ const commonCodeColumns = [
     editor: 'input', 
     headerSort: false, 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '속성9', 
@@ -679,7 +696,7 @@ const commonCodeColumns = [
     editor: 'input',
     headerSort: false, 
     headerHozAlign: 'center',
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '속성10',
@@ -688,7 +705,7 @@ const commonCodeColumns = [
     editor: 'input', 
     headerSort: false,
     headerHozAlign: 'center',
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
 ]
 
@@ -703,7 +720,7 @@ const detailColumns = [
     headerHozAlign: 'center',
     formatter: (cell: any) => {
       const d = cell.getRow().getData()
-      const st: RowState = d.__rowState ?? null
+      const st: RowState = d.state ?? null
       if (st === 'I') return `<span class="badge-pill badge-insert">신규</span>`
       if (st === 'U') return `<span class="badge-pill badge-update">수정</span>`
       if (st === 'D') return `<span class="badge-pill badge-delete">삭제</span>`
@@ -717,7 +734,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input',
     headerHozAlign: 'center',
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '서브코드명',
@@ -726,7 +743,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input', 
     headerHozAlign: 'center',
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   {
     title: '사용여부',
@@ -738,7 +755,7 @@ const detailColumns = [
     editorParams: { values: { Y: '사용', N: '미사용' }, clearable: false },
     formatter: 'lookup',
     formatterParams: { Y: '사용', N: '미사용' },
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '순서', 
@@ -747,7 +764,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'number', 
     headerHozAlign: 'center',
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '설명', 
@@ -756,7 +773,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input', 
     headerHozAlign: 'center',
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D'
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
     title: '속성1', 
@@ -765,7 +782,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input', 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D' 
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D' 
   },
   { 
     title: '속성2', 
@@ -774,7 +791,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input', 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D' 
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D' 
   },
   { 
     title: '속성3', 
@@ -782,7 +799,7 @@ const detailColumns = [
     width: 100, 
     editor: 'input', 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D' 
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D' 
   },
   { 
     title: '속성4', 
@@ -791,7 +808,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input', 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D' 
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D' 
   },
   { 
     title: '속성5', 
@@ -800,7 +817,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input', 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D' 
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D' 
   },
   { 
     title: '속성6', 
@@ -809,7 +826,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input', 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D' 
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D' 
   },
   { 
     title: '속성7', 
@@ -818,7 +835,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input', 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D' 
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D' 
   },
   { 
     title: '속성8', 
@@ -827,7 +844,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input', 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D' 
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D' 
   },
   { 
     title: '속성9', 
@@ -836,7 +853,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input', 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D' 
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D' 
   },
   { 
     title: '속성10', 
@@ -845,7 +862,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input', 
     headerHozAlign: 'center', 
-    editable: (cell: any) => (cell.getRow().getData().__rowState ?? null) !== 'D' 
+    editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D' 
   },
 ]
 
@@ -857,8 +874,8 @@ const loadCommonCodes = async () => {
 
   const rows = (res.data ?? []).map((r: any) => ({
     ...r,
-    __rowKey: r.commonCode,
-    __rowState: null,
+    keyName: r.commonCode,
+    state: null,
   }))
 
   commonCodes.value = rows
@@ -867,7 +884,7 @@ const loadCommonCodes = async () => {
 
   originalCommonMap.value.clear()
   rows.forEach((r: any) => {
-    originalCommonMap.value.set(r.__rowKey, stableStringify(normalizeByKeys(r, COMMON_KEYS)))
+    originalCommonMap.value.set(r.keyName, stableStringify(normalizeByKeys(r, COMMON_KEYS)))
   })
 
   insertedCommonMap.value.clear()
@@ -888,15 +905,15 @@ const loadDetails = async (row: CommonCode) => {
 
   const dtlRows = (res.data ?? []).map((r: any) => ({
     ...r,
-    __rowKey: `${r.commonCode}::${r.commonCodeDtl}`,
-    __rowState: null,
+    keyName: `${r.commonCode}::${r.commonCodeDtl}`,
+    state: null,
   }))
 
   commonCodeDetails.value = dtlRows
 
   originalDtlMap.value.clear()
   dtlRows.forEach((r: any) => {
-    originalDtlMap.value.set(r.__rowKey, stableStringify(normalizeByKeys(r, DTL_KEYS)))
+    originalDtlMap.value.set(r.keyName, stableStringify(normalizeByKeys(r, DTL_KEYS)))
   })
 
   insertedDtlMap.value.clear()
@@ -908,8 +925,8 @@ const loadDetails = async (row: CommonCode) => {
  * cell edited handlers
  * ====================== */
 const onCommonCellEdited = ({ row }: any) => {
-  const key = row.__rowKey
-  const st: RowState = row.__rowState ?? null
+  const key = row.keyName
+  const st: RowState = row.state ?? null
   if (st === 'D') return
 
   if (st === 'I') {
@@ -934,8 +951,8 @@ const onCommonCellEdited = ({ row }: any) => {
 }
 
 const onDtlCellEdited = ({ row }: any) => {
-  const key = row.__rowKey
-  const st: RowState = row.__rowState ?? null
+  const key = row.keyName
+  const st: RowState = row.state ?? null
   if (st === 'D') return
 
   if (st === 'I') {
@@ -962,45 +979,134 @@ const onDtlCellEdited = ({ row }: any) => {
 /* ======================
  * save handlers
  * ====================== */
-const saveCommon = async () => {
-  const inserts = Array.from(insertedCommonMap.value.values()).map(stripMeta)
-  const updates = Array.from(updatedCommonMap.value.values()).map(stripMeta)
-  const deletes = Array.from(deletedCommonMap.value.values()).map(stripMeta)
 
-  const invalidInsert = inserts.find((r: any) => !r.commonCode)
+
+const saveCommon = async () => {
+
+  const confirms = await openConfirm('데이터를 저장하시겠습니까?');
+  if (!confirms) return;
+
+  const inserts = Array.from(insertedCommonMap.value.values()).map(r => ({
+    ...stripMeta(r),
+    crudType: 'I',
+    createdUserId: userInfo.value.userId,
+    updatedUserId: userInfo.value.userId,
+  }))
+
+  const updates = Array.from(updatedCommonMap.value.values()).map(r => ({
+    ...stripMeta(r),
+    crudType: 'U',
+    updatedUserId: userInfo.value.userId,
+  }))
+
+  const deletes = Array.from(deletedCommonMap.value.values()).map(r => ({
+    ...stripMeta(r),
+    crudType: 'D',
+  }))
+
+  const payload = [...inserts, ...updates, ...deletes]
+
+  if (payload.length === 0) {
+    await openAlert('공통코드 변경사항이 없습니다.')
+    return
+  }
+
+  const invalidInsert = payload.find(
+    (r: any) => r.crudType === 'I' && !r.commonCode
+  )
   if (invalidInsert) {
     await openAlert('신규 공통코드의 공통코드는 필수입니다.')
     return
   }
 
-  if (inserts.length === 0 && updates.length === 0 && deletes.length === 0) {
-    await openAlert('공통코드 변경사항이 없습니다.')
-    return
+  try {
+    await saveCommonCodes(payload)
+
+    await openAlert('공통코드 저장이 완료되었습니다.')
+    await loadCommonCodes()
+
+  } catch (err: any) {
+    console.error('[공통코드 저장 실패]', err)
+
+    // 서버에서 내려준 메시지 우선 사용
+    const message =
+      err?.response?.data?.message ||
+      err?.response?.data?.error ||
+      '공통코드 저장 중 오류가 발생했습니다.'
+
+    await openAlert(message)
   }
-  debugger
-  await openAlert('공통코드 저장이 완료되었습니다.')
-  await loadCommonCodes()
 }
 
 const saveDtl = async () => {
-  const inserts = Array.from(insertedDtlMap.value.values()).map(stripMeta)
-  const updates = Array.from(updatedDtlMap.value.values()).map(stripMeta)
-  const deletes = Array.from(deletedDtlMap.value.values()).map(stripMeta)
 
-  const invalidInsert = inserts.find((r: any) => !r.commonCodeDtl)
+  const confirms = await openConfirm('데이터를 저장하시겠습니까?');
+  if (!confirms) return;
+
+  const inserts = Array.from(insertedDtlMap.value.values()).map(r => ({
+    ...stripMeta(r),
+    crudType: 'I',
+    createdUserId: userInfo.value.userId,
+    updatedUserId: userInfo.value.userId
+  }))
+
+  const updates = Array.from(updatedDtlMap.value.values()).map(r => ({
+    ...stripMeta(r),
+    crudType: 'U',
+    updatedUserId: userInfo.value.userId
+  }))
+
+  const deletes = Array.from(deletedDtlMap.value.values()).map(r => ({
+    ...stripMeta(r),
+    crudType: 'D',
+  }))
+
+  const payload = [...inserts, ...updates, ...deletes]
+
+  // 변경 없음
+  if (payload.length === 0) {
+    await openAlert('서브코드 변경사항이 없습니다.')
+    return
+  }
+
+  // 신규 서브코드 필수값 검증
+  const invalidInsert = payload.find(
+    (r: any) => r.crudType === 'I' && !r.commonCodeDtl
+  )
   if (invalidInsert) {
     await openAlert('신규 서브코드의 서브코드는 필수입니다.')
     return
   }
 
-  if (inserts.length === 0 && updates.length === 0 && deletes.length === 0) {
-    await openAlert('서브코드 변경사항이 없습니다.')
-    return
-  }
+  try {
+    await saveCommonCodeDtls(payload)
 
-  await openAlert('서브코드 저장이 완료되었습니다.')
-  if (selectedCommonCode.value) await loadDetails(selectedCommonCode.value)
+    await openAlert('서브코드 저장이 완료되었습니다.')
+
+    // 현재 선택된 공통코드 기준으로 재조회
+    if (selectedCommonCode.value) {
+      await loadDetails(selectedCommonCode.value)
+    }
+
+  } catch (err: any) {
+    console.error('[서브코드 저장 실패]', err)
+
+    const res = err?.response?.data
+
+    // 서버 validation 에러 (필드별)
+    if (res?.errors) {
+      const messages = Object.values(res.errors).join('\n')
+      await openAlert(messages)
+      return
+    }
+
+    // 일반 에러
+    await openAlert(
+      res?.message || '서브코드 저장 중 오류가 발생했습니다.'
+    )
+  }
 }
+
 
 /* ======================
  * 단축키 편집 (Enter/F2)
@@ -1009,7 +1115,7 @@ const startEditCommonCode = () => {
   const rows = commonTable.value?.getSelectedRows?.() ?? []
   if (rows.length !== 1) return
   const row = rows[0]
-  const st: RowState = row.getData().__rowState ?? null
+  const st: RowState = row.getData().state ?? null
   if (st !== 'I') {
     openAlert('공통코드는 신규(I) 행에서만 편집 가능합니다.')
     return
@@ -1023,7 +1129,7 @@ const startEditDtlCode = () => {
   const rows = detailTable.value?.getSelectedRows?.() ?? []
   if (rows.length !== 1) return
   const row = rows[0]
-  const st: RowState = row.getData().__rowState ?? null
+  const st: RowState = row.getData().state ?? null
   if (st !== 'I') {
     openAlert('서브코드는 신규(I) 행에서만 편집 가능합니다.')
     return
@@ -1097,10 +1203,10 @@ onBeforeUnmount(() => {
     <div class="custom-content">
       <div class="header-bar">
         <div class="action-bar">
-          <ElButton type="primary" size="md" label="추가" @click="addCommonRow" />
-          <ElButton type="danger" size="md" label="삭제" @click="deleteSelectedCommon" />
+          <ElButton type="secondary" size="md" label="추가" @click="addCommonRow" />
+          <ElButton type="secondary" size="md" label="삭제" @click="deleteSelectedCommon" />
           <ElButton type="secondary" size="md" label="복구" @click="restoreSelectedCommon" />
-          <ElButton type="success" size="md" label="저장" @click="saveCommon" />
+          <ElButton type="primary" size="md" label="저장" @click="saveCommon" />
         </div>
       </div>
 
@@ -1109,17 +1215,17 @@ onBeforeUnmount(() => {
         :columns="commonCodeColumns"
         :options="commonGridOptions"
         height="250px"
-        index-field="__rowKey"
+        index-field="keyName"
         @ready="onCommonGridReady"
         @cell-edited="onCommonCellEdited"
       />
 
       <div class="header-bar mt-4">
         <div class="action-bar">
-          <ElButton type="primary" size="md" label="추가" @click="addDtlRow" />
-          <ElButton type="danger" size="md" label="삭제" @click="deleteSelectedDtl" />
+          <ElButton type="secondary" size="md" label="추가" @click="addDtlRow" />
+          <ElButton type="secondary" size="md" label="삭제" @click="deleteSelectedDtl" />
           <ElButton type="secondary" size="md" label="복구" @click="restoreSelectedDtl" />
-          <ElButton type="success" size="md" label="저장" @click="saveDtl" />
+          <ElButton type="primary" size="md" label="저장" @click="saveDtl" />
         </div>
       </div>
 
@@ -1128,7 +1234,7 @@ onBeforeUnmount(() => {
         :columns="detailColumns"
         :options="detailGridOptions"
         height="300px"
-        index-field="__rowKey"
+        index-field="keyName"
         @ready="onDtlGridReady"
         @cell-edited="onDtlCellEdited"
       />

@@ -98,8 +98,8 @@ const confirm = async (event) => {
       </div>
 
       <button
-        class="layout-topbar-menu-button layout-topbar-action"
-        v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'p-anchored-overlay-enter-active', leaveToClass: 'hidden', leaveActiveClass: 'p-anchored-overlay-leave-active', hideOnOutsideClick: true }">
+        v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'p-anchored-overlay-enter-active', leaveToClass: 'hidden', leaveActiveClass: 'p-anchored-overlay-leave-active', hideOnOutsideClick: true }"
+        class="layout-topbar-menu-button layout-topbar-action">
         <i class="pi pi-ellipsis-v"></i>
       </button>
 
@@ -107,18 +107,19 @@ const confirm = async (event) => {
         <div class="layout-topbar-menu-content">
           <button type="button" class="layout-topbar-action">
             <i class="pi pi-calendar"></i>
-            <span>Calendar</span>
+            <span>캘린더</span>
           </button>
           <button type="button" class="layout-topbar-action">
             <i class="pi pi-inbox"></i>
-            <span>Messages</span>
+            <span>채팅</span>
           </button>
           <button type="button" class="layout-topbar-action">
             <i class="pi pi-user"></i>
-            <span>Profile</span>
+            <span>프로필</span>
           </button>
           <button type="button" class="layout-topbar-action" @click="confirm">
             <i class="pi pi-fw pi-sign-in layout-menuitem-icon" style="color: red"></i>
+            <span style="color: red">로그아웃</span>
           </button>
           <ConfirmPopup></ConfirmPopup>
         </div>

@@ -58,7 +58,7 @@ const routes: RouteRecordRaw[] = [
         path: 'commonCodes',
         name: 'commonCodes',
         component: () =>
-          import('@/views/pages/cmmnCd/CommonCodeList.vue')
+          import('@/views/pages/cmmnCd/CmmnCdList.vue')
       },
       {
         path: 'dashboard',
