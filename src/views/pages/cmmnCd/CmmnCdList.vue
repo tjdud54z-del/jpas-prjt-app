@@ -349,9 +349,9 @@ const addCommonRow = async () => {
   commonTable.value.addRow(newRow, true).then((rowComp: any) => {
     insertedCommonMap.value.set(key, rowComp.getData())
     rowComp.reformat?.()
-
-    rowComp.getCell('commonCode')?.edit()
-
+    requestAnimationFrame(() => {
+      rowComp.getCell('commonCode')?.edit()
+    })
     redrawOnce(commonTable.value)
   })
 }
@@ -497,7 +497,9 @@ const selectionColumn = {
   formatter: 'rowSelection',
   titleFormatter: 'rowSelection',
   hozAlign: 'center',
+  headerHozAlign: 'center',
   headerSort: false,
+  frozen: true,
   width: 50,
   cellClick: (e: any) => {
     e.stopPropagation()
@@ -533,17 +535,18 @@ const commonCodeColumns = [
   {
     title: 'status',
     field: '__badge',
-    width: 70,
+    width: 50,
     headerSort: false,
     hozAlign: 'center',
     headerHozAlign: 'center',
+    frozen: true,
     formatter: (cell: any) => {
       const d = cell.getRow().getData()
       const st: RowState = d.state ?? null
       if (st === 'I') return `<span class="badge-pill badge-insert">신규</span>`
       if (st === 'U') return `<span class="badge-pill badge-update">수정</span>`
       if (st === 'D') return `<span class="badge-pill badge-delete">삭제</span>`
-      return ''
+      return '<span class="badge-pill"></span>'
     },
   },
   {
@@ -553,6 +556,7 @@ const commonCodeColumns = [
     headerSort: false,
     editor: 'input',
     headerHozAlign: 'center',
+    frozen: true,
     editable: (cell: any) => {
       const st: RowState = cell.getRow().getData().state ?? null
       return st === 'I'
@@ -564,7 +568,6 @@ const commonCodeColumns = [
       return `
         <span style="
           width:100%;
-          border-radius:6px;
           cursor:pointer;
           font-weight:${isActive ? '700' : '500'};
           color:${isActive ? '#1d4ed8' : '#2563eb'};
@@ -707,6 +710,20 @@ const commonCodeColumns = [
     headerHozAlign: 'center',
     editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
+  { 
+    title: '등록자', 
+    field: 'createdUserName', 
+    width: 80, 
+    headerSort: false,
+    headerHozAlign: 'center'
+  },
+  { 
+    title: '수정자', 
+    field: 'updatedUserName', 
+    width: 80, 
+    headerSort: false,
+    headerHozAlign: 'center'
+  },
 ]
 
 const detailColumns = [
@@ -714,17 +731,18 @@ const detailColumns = [
   {
     title: 'status',
     field: '__badge',
-    width: 70,
+    width: 50,
     headerSort: false,
     hozAlign: 'center',
     headerHozAlign: 'center',
+    frozen: true,
     formatter: (cell: any) => {
       const d = cell.getRow().getData()
       const st: RowState = d.state ?? null
       if (st === 'I') return `<span class="badge-pill badge-insert">신규</span>`
       if (st === 'U') return `<span class="badge-pill badge-update">수정</span>`
       if (st === 'D') return `<span class="badge-pill badge-delete">삭제</span>`
-      return ''
+      return '<span class="badge-pill"></span>'
     },
   },
   {
@@ -734,6 +752,7 @@ const detailColumns = [
     headerSort: false,
     editor: 'input',
     headerHozAlign: 'center',
+    frozen: true,
     editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
   { 
@@ -763,6 +782,7 @@ const detailColumns = [
     width: 80, 
     headerSort: false,
     editor: 'number', 
+    hozAlign: 'right',
     headerHozAlign: 'center',
     editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D'
   },
@@ -863,6 +883,20 @@ const detailColumns = [
     editor: 'input', 
     headerHozAlign: 'center', 
     editable: (cell: any) => (cell.getRow().getData().state ?? null) !== 'D' 
+  },
+  { 
+    title: '등록자', 
+    field: 'createdUserName', 
+    width: 80, 
+    headerSort: false,
+    headerHozAlign: 'center'
+  },
+  { 
+    title: '수정자', 
+    field: 'updatedUserName', 
+    width: 80, 
+    headerSort: false,
+    headerHozAlign: 'center'
   },
 ]
 
@@ -1121,7 +1155,9 @@ const startEditCommonCode = () => {
     return
   }
   allowEditCommonCode.value = true
-  row.getCell('commonCode')?.edit?.()
+  requestAnimationFrame(() => {
+    row.getCell('commonCode')?.edit?.()
+  })
   setTimeout(() => (allowEditCommonCode.value = false), 0)
 }
 
@@ -1135,7 +1171,9 @@ const startEditDtlCode = () => {
     return
   }
   allowEditDtlCode.value = true
-  row.getCell('commonCodeDtl')?.edit?.()
+  requestAnimationFrame(() => {
+    row.getCell('commonCode')?.edit?.()
+  })
   setTimeout(() => (allowEditDtlCode.value = false), 0)
 }
 

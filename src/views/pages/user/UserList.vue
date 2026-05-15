@@ -1,5 +1,6 @@
 <script setup lang="ts">
 /** 임포트 컴포넌트 */
+import { fetchCmmnCdSelectOptionByCondition } from '@/api/cmmnCdApi'
 import { fetchUsersByCondition, restoreUsers, retireUsers } from '@/api/userApi'
 import ElButton from '@/components/common/ElButton.vue'
 import ElDatePicker from '@/components/common/ElDatePicker.vue'
@@ -54,15 +55,9 @@ const onSelectionChange = (rows: Record<string, any>[]) => {
   checkedIds.value = rows.map((r) => r.userId)
 }
 
-const activeOptions = [
-  { label: '정상', value: 'Y' },
-  { label: '탈퇴', value: 'N' }
-]
-
-const genderOptions = [
-  { label: '남성', value: 'M' },
-  { label: '여성', value: 'W' }
-]
+/** selectOption */
+const activeOptions = [{ label: '정상', value: 'Y' }, { label: '탈퇴', value: 'N' }]
+const genderOptions = ref<any[]>([])
 
 /** Tabulator 컬럼 정의 */
 const gridOptions = {
@@ -84,7 +79,7 @@ const columns: any[] = [
   { title: '이름', field: 'name', sorter: 'string' },
   { title: '이메일', field: 'email', sorter: 'string' },
   { title: '생년월일', field: 'birthDate', sorter: 'number' },
-  { title: '성별', field: 'genderFlag', sorter: 'string' },
+  { title: '성별', field: 'genderFlagName', sorter: 'string' },
   { title: '전화번호', field: 'phoneNumber', sorter: 'string' },
   { title: '메인주소', field: 'addressMain', sorter: 'string' },
   { title: '상세주소', field: 'addressSub', sorter: 'string' },
@@ -263,8 +258,11 @@ const cancelCreate = () => {
   showCreateModal.value = false
 }
 
-onMounted(() => {
+onMounted(async () => {
   loadUsers()
+  const genderCd = await fetchCmmnCdSelectOptionByCondition({ commonCode : 'GENDER_FLAG' })
+  genderOptions.value = genderCd.data ?? []
+  
 })
 </script>
 

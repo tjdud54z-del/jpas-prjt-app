@@ -36,8 +36,12 @@ export interface CmmnCd {
   attr0: string // 속성10
   createdAt: string // 생성일시
   createdUserId: number // 생성유저
+  createdUserName: string // 생서유저명
   updatedAt: string // 수정일시
   updatedUserId: number // 수정유저
+  updatedUserName: string // 수정유저명
+  value: string // 공통코드 selectbox용
+  lavel: string // 공통코드명 selectbox용
 }
 
 /**
@@ -109,7 +113,7 @@ export interface CmmnCdDtl {
  * ===============================
  * 공통코드 검색 조회 API
  * ===============================
- * POST /api/query/cmmnCd/search/CmmnCdList
+ * POST /api/query/cmmnCd/CmmnCdList
  *
  * @param param 공통 CommonParams
  */
@@ -126,7 +130,7 @@ export function fetchCmmnCdByCondition(
  * ===============================
  * 서브코드 검색 조회 API
  * ===============================
- * POST /api/query/cmmnCd/search/CmmnCdDtlList
+ * POST /api/query/cmmnCd/CmmnCdDtlList
  *
  * @param param 공통 CommonParams
  */
@@ -135,6 +139,23 @@ export function fetchCmmnCdDtlByCondition(
 ) {
   return http.post<CmmnCd[]>(
     `${READ_ONLY_API}/cmmnCdDtlList`,
+    param
+  )
+}
+
+/**
+ * ===============================
+ * selectbox 옵션을 검색 조회 API
+ * ===============================
+ * POST /api/query/cmmnCd/selectOption
+ *
+ * @param param 공통 CommonParams
+ */
+export function fetchCmmnCdSelectOptionByCondition(
+  param: CommonParams
+) {
+  return http.post<CmmnCd[]>(
+    `${READ_ONLY_API}/selectOption`,
     param
   )
 }

@@ -69,6 +69,7 @@ declare module 'vue' {
     OrderList: typeof import('primevue/orderlist')['default']
     OverlayBadge: typeof import('primevue/overlaybadge')['default']
     Panel: typeof import('primevue/panel')['default']
+    Password: typeof import('primevue/password')['default']
     PickList: typeof import('primevue/picklist')['default']
     Popover: typeof import('primevue/popover')['default']
     PricingWidget: typeof import('./src/components/landing/PricingWidget.vue')['default']
