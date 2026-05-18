@@ -146,8 +146,17 @@ onMounted(load)
   list-style: none;
   margin: 0;
   padding: 0;
-  max-height: 520px;
+  max-height: 760px;
   overflow-y: auto;
+}
+
+.dm-list__body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.dm-list__body::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 6px;
 }
 
 .dm-item {
