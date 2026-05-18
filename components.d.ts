@@ -63,6 +63,7 @@ declare module 'vue' {
     Knob: typeof import('primevue/knob')['default']
     Listbox: typeof import('primevue/listbox')['default']
     Menu: typeof import('primevue/menu')['default']
+    Message: typeof import('primevue/message')['default']
     ModalHost: typeof import('./src/components/common/ModalHost.vue')['default']
     MultiSelect: typeof import('primevue/multiselect')['default']
     NotificationsWidget: typeof import('./src/components/dashboard/NotificationsWidget.vue')['default']

@@ -47,6 +47,7 @@ const currentUser = computed(() => {
 
 const myUserId = computed(() => Number(currentUser.value?.userId || 0))
 const myUserNo = computed(() => String(currentUser.value?.userNo || ''))
+const myGender = computed(() => String(currentUser.value?.genderFlag || ''))
 
 /** 프로필 이미지 캐시 무효화용 키 (프로필 경로가 바뀔 때만 갱신) */
 const avatarCacheKey = ref(Date.now())
@@ -60,7 +61,8 @@ watch(
 const profileImgSrc = computed(() => {
   const path = currentUser.value?.profileImagePath
   if (!path) {
-    return '/images/default-profile.png'
+    if (myGender.value === 'M') return 'http://localhost:8080/uploads/basicM.jpg'
+    if (myGender.value === 'W') return 'http://localhost:8080/uploads/basicW.jpg'
   }
   const baseUrl = 'http://localhost:8080'
   return `${baseUrl}${path}?t=${Date.now()}`
@@ -181,7 +183,7 @@ watch(visibleRight, (open) => {
 //     reject: () => {}
 //   })
 // }
-const confirm = async () => {
+const confirm = async (e: any) => {
 
   const ok = await openConfirm('로그아웃 하시겠습니까?')
   if (!ok) return
@@ -268,7 +270,7 @@ const confirm = async () => {
 
           <!-- 채팅 버튼 -->
           <button type="button" class="layout-topbar-action" @click="visibleRight = true">
-            <i class="pi pi-inbox"></i>
+            <i class="pi pi-comment"></i>
             <span>채팅</span>
           </button>
 

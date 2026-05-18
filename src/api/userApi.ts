@@ -12,6 +12,7 @@ export interface User {
   activeYn: 'Y' | 'N'
   genderFlag: string
   phoneNumber: string
+  profileImagePath: string
 }
 
 /** 조회용 검색조건 */
@@ -19,6 +20,7 @@ export interface UserSearchParam {
   userNo?: string
   name?: string
   activeYn?: '' | 'Y' | 'N'
+  userNoOrName?: string
 }
 
 /** Command(등록/수정)용 파라미터: 화면 폼 필드 + profileImagePath까지 포함 */
@@ -76,7 +78,7 @@ export function restoreUsers(userIds: number[]) {
   return http.put<void>(`${JPA_API}/restore`, { userIds })
 }
 
-/** ✅ 프로필 이미지 업로드 (multipart + progress) */
+/** 프로필 이미지 업로드 (multipart + progress) */
 export function uploadProfileImage(
   file: File,
   userId: number,

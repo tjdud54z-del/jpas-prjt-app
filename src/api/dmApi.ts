@@ -8,6 +8,8 @@ export interface DmConversationListItem {
   peerUserId: number // camelCase 통일
   peerUserNo: string
   peerUserName: string
+  peerProfileImagePath: string
+  peerGenderFlag: string
   lastMessageId: number | null
   lastMessageAt: string | null
   lastMessage: string | null

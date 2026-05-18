@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { fetchDmConversations, markConversationRead, type DmConversationListItem } from '@/api/dmApi'
-import { onMounted, ref, watch } from 'vue'
+import { fetchDmConversations, markConversationRead, type DmConversationListItem } from '@/api/dmApi';
+import { onMounted, ref, watch } from 'vue';
 
-import { useDmStore } from '@/store/dmStore'
+import { useDmStore } from '@/store/dmStore';
 const store = useDmStore()
 
 const emit = defineEmits<{
@@ -11,6 +11,15 @@ const emit = defineEmits<{
 
 const conversations = ref<DmConversationListItem[]>([])
 const loading = ref(false)
+
+const getProfileImg = (genderFlag?: string, path?: string) => {
+  if (!path) {
+    if (genderFlag === 'M') return 'http://localhost:8080/uploads/basicM.jpg'
+    if (genderFlag === 'W') return 'http://localhost:8080/uploads/basicW.jpg'
+  }
+  const baseUrl = 'http://localhost:8080'
+  return `${baseUrl}${path}?t=${Date.now()}`
+}
 
 /** 로그인 사용자 ID */
 const getUserId = (): number => {
@@ -69,24 +78,48 @@ onMounted(load)
       <strong>채팅방</strong>
     </header>
 
-    <ul class="dm-list__body">
-      <li v-for="c in conversations" :key="c.conversationId" class="dm-item" @click="onClick(c)">
-        <!-- 상단: 이름 + 시간 -->
-        <div class="top">
-          <span class="name"> {{ c.peerUserName }}({{ c.peerUserNo }})</span>
-          <span class="time">
-            {{ c.lastMessageAt?.slice(11, 16) ?? '' }}
-          </span>
+    <ul class="dm-list__body"> 
+      <li
+        v-for="c in conversations"
+        :key="c.conversationId"
+        class="dm-item"
+        @click="onClick(c)"
+      >
+        <!-- 프로필 -->
+        <div class="avatar">
+          <!-- <img
+            v-if="c.peerProfileImagePath"
+            :src="getProfileImg(c.peerGenderFlag, c.peerProfileImagePath)"
+            class="avatar-img"
+          />
+          <div v-else class="avatar-fallback">
+            {{ c.peerUserName?.charAt(0) }}
+          </div>
+        </div> -->
+         <img
+            :src="getProfileImg(c.peerGenderFlag, c.peerProfileImagePath)"
+            class="avatar-img" />
         </div>
 
-        <!-- 하단: 마지막 메시지 + 안 읽음 -->
-        <div class="bottom">
-          <span class="message">
-            {{ c.lastMessage ?? '대화를 시작해보세요' }}
-          </span>
-          <span v-if="c.unreadCount > 0" class="badge">
-            {{ c.unreadCount }}
-          </span>
+        <!-- 본문 -->
+        <div class="content">
+          <div class="top">
+            <span class="name">
+              {{ c.peerUserName }} ({{ c.peerUserNo }})
+            </span>
+            <span class="time">
+              {{ c.lastMessageAt?.slice(11, 16) ?? '' }}
+            </span>
+          </div>
+
+          <div class="bottom">
+            <span class="message">
+              {{ c.lastMessage ?? '대화를 시작해보세요' }}
+            </span>
+            <span v-if="c.unreadCount > 0" class="badge">
+              {{ c.unreadCount }}
+            </span>
+          </div>
         </div>
       </li>
       <li v-if="!loading && conversations.length === 0" class="empty">대화가 없습니다</li>
@@ -118,6 +151,8 @@ onMounted(load)
 }
 
 .dm-item {
+  display: flex;
+  gap: 10px;
   padding: 10px 12px;
   border-bottom: 1px solid #f1f5f9;
   cursor: pointer;
@@ -173,4 +208,32 @@ onMounted(load)
   text-align: center;
   color: #9ca3af;
 }
+
+.avatar {
+  width: 40px;
+  height: 40px;
+}
+
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.avatar-fallback {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: #e5e7eb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.content {
+  flex: 1;
+  min-width: 0;
+}
+
 </style>
