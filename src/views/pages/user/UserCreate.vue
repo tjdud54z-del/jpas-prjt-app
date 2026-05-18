@@ -181,8 +181,6 @@ const saveUser = async () => {
       userForm.value.profileImagePath = profileImageDeleted.value ? null : (userForm.value.profileImagePath ?? null)
     }
 
-    alert('저장 완료')
-
     await openAlert('유저등록이 완료되었습니다.')
 
     resetForm()
