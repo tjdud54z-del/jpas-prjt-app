@@ -27,16 +27,25 @@ export const useDmStore = defineStore('dm', () => {
     if (activeConversationId.value == null) return []
 
     return messages.value
-      .filter((m) => m.conversationId === activeConversationId.value)
+      .filter(
+        (m) =>
+          m.conversationId === activeConversationId.value
+      )
       .sort((a, b) => {
-        if (a.messageId && b.messageId) return a.messageId - b.messageId
-        return (a.sentAt ?? '').localeCompare(b.sentAt ?? '')
+        if (a.messageId && b.messageId)
+          return a.messageId - b.messageId
+        return (a.sentAt ?? '').localeCompare(
+          b.sentAt ?? ''
+        )
       })
   })
 
   /** 대화 전환 */
-  const setActiveConversation = (conversationId: number) => {
-    if (activeConversationId.value === conversationId) return
+  const setActiveConversation = (
+    conversationId: number
+  ) => {
+    if (activeConversationId.value === conversationId)
+      return
     activeConversationId.value = conversationId
 
     // 대화방 바뀌면 읽음 정보 초기화
@@ -61,35 +70,86 @@ export const useDmStore = defineStore('dm', () => {
     const userInfo = JSON.parse(raw)
     const userId = Number(userInfo.userId)
 
-    const res = await fetchDmMessages({ conversationId: conversationId, userId: userId, size: 50 })
+    const res = await fetchDmMessages({
+      conversationId: conversationId,
+      userId: userId,
+      size: 50
+    })
 
     // 읽음 정보 세팅
-    setPeerLastReadMessageId(res.data.peerLastReadMessageId ?? 0)
+    setPeerLastReadMessageId(
+      res.data.peerLastReadMessageId ?? 0
+    )
 
-    const mapped: DmUiPayload[] = res.data.messages.map((m: any) => ({
-      messageId: m.messageId,
-      conversationId,
-      content: m.body,
-      sentAt: m.sentAt,
-      senderUserNm: m.senderUserNm,
-      senderUserId: m.senderUserId,
-      senderUserNo: m.senderUserNo,
-      status: 'sent'
-    }))
+    const mapped: DmUiPayload[] = res.data.messages.map(
+      (m: any) => ({
+        messageId: m.messageId,
+        conversationId,
+        content: m.body,
+        sentAt: m.sentAt,
+        senderUserNm: m.senderUserNm,
+        senderUserId: m.senderUserId,
+        senderUserNo: m.senderUserNo,
+        status: 'sent'
+      })
+    )
 
     setMessages(conversationId, mapped)
   }
 
   /** WebSocket / 서버 수신 메시지 추가 */
+
   const addMessage = (msg: DmUiPayload) => {
-    if (!msg.conversationId && activeConversationId.value != null) {
+    if (
+      !msg.conversationId &&
+      activeConversationId.value != null
+    ) {
       msg.conversationId = activeConversationId.value
     }
 
-    if (msg.messageId && messages.value.some((m) => m.messageId === msg.messageId)) {
+    // 1️messageId 중복 방지
+    if (
+      msg.messageId &&
+      messages.value.some(
+        (m) => m.messageId === msg.messageId
+      )
+    ) {
       return
     }
 
+    // 2️tempId 기반 optimistic → 서버 메시지 교체
+    if (msg.tempId) {
+      const idx = messages.value.findIndex(
+        (m) => m.tempId === msg.tempId
+      )
+      if (idx !== -1) {
+        messages.value[idx] = {
+          ...messages.value[idx],
+          ...msg,
+          status: 'sent'
+        }
+        return
+      }
+    }
+
+    // 3️fallback (tempId 없을 경우 대비)
+    const idx = messages.value.findIndex(
+      (m) =>
+        !m.messageId &&
+        m.content === msg.content &&
+        String(m.senderUserId) === String(msg.senderUserId)
+    )
+
+    if (idx !== -1) {
+      messages.value[idx] = {
+        ...messages.value[idx],
+        ...msg,
+        status: 'sent'
+      }
+      return
+    }
+
+    // 신규 메시지 추가
     messages.value.push({
       ...msg,
       status: msg.status ?? 'sent'
@@ -97,8 +157,14 @@ export const useDmStore = defineStore('dm', () => {
   }
 
   /** 낙관적 메시지 추가 */
-  const addOptimisticMessage = (payload: { conversationId?: number; senderUserId: number; senderUserNo: string; content: string }) => {
-    const cid = payload.conversationId ?? activeConversationId.value
+  const addOptimisticMessage = (payload: {
+    conversationId?: number
+    senderUserId: number
+    senderUserNo: string
+    content: string
+  }) => {
+    const cid =
+      payload.conversationId ?? activeConversationId.value
     if (!cid) return ''
 
     const tempId = `tmp_${Date.now()}_${Math.random().toString(36).slice(2)}`
@@ -125,7 +191,9 @@ export const useDmStore = defineStore('dm', () => {
       conversationId: number
     }
   ) => {
-    const msg = messages.value.find((m) => m.tempId === tempId)
+    const msg = messages.value.find(
+      (m) => m.tempId === tempId
+    )
     if (!msg) return
 
     msg.messageId = server.messageId
@@ -137,14 +205,21 @@ export const useDmStore = defineStore('dm', () => {
 
   /** 전송 실패 */
   const failMessage = (tempId: string) => {
-    const msg = messages.value.find((m) => m.tempId === tempId)
+    const msg = messages.value.find(
+      (m) => m.tempId === tempId
+    )
     if (!msg) return
     msg.status = 'failed'
   }
 
   /** 대화 단위 세팅 */
-  const setMessages = (conversationId: number, list: DmUiPayload[]) => {
-    messages.value = messages.value.filter((m) => m.conversationId !== conversationId)
+  const setMessages = (
+    conversationId: number,
+    list: DmUiPayload[]
+  ) => {
+    messages.value = messages.value.filter(
+      (m) => m.conversationId !== conversationId
+    )
     messages.value.push(...list)
   }
 

@@ -14,7 +14,7 @@ const loading = ref(false)
 
 const login = async () => {
   if (!userNo.value?.trim() || !password.value) {
-    await openAlert('사번/비밀번호를 입력하세요.')
+    await openAlert('계정과 비밀번호를 입력하세요.')
     return
   }
 

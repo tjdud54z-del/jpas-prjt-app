@@ -19,7 +19,7 @@ const { connect, send, disconnect, connected } = useDmClient();
 onMounted(() => {
   connect((msg) => {
     // 내가 보낸 echo 메시지는 무시
-    if (msg.senderUserId === myUserId) {
+    if (String(msg.senderUserId) === String(myUserId)) {
       return;
     }
 
@@ -35,6 +35,6 @@ onUnmounted(() => {
 
 <template>
   <div style="padding: 16px">
-    <DmPanel :connected="connected" :myUserId="myUserId" :peerUserId="peerUserId" :conversationId="conversationId" :onSend="send" />
+    <DmPanel :connected="connected" :my-user-id="myUserId" :peer-user-id="peerUserId" :conversation-id="conversationId" :on-send="send" />
   </div>
 </template>

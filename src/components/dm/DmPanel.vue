@@ -26,25 +26,30 @@ const messages = computed(() => {
   });
 });
 
+
 const handleSend = () => {
   const content = text.value.trim();
   if (!content) return;
 
-  props.onSend(
-    {
-      receiverUserId: props.peerUserId,
-      content,
-      conversationId: props.conversationId
-    },
-    (msg) =>
-      store.addMessage({
-        ...msg,
-        senderUserId: props.myUserId // 핵심
-      })
-  );
+  // optimistic 먼저 추가
+  const tempId = store.addOptimisticMessage({
+    conversationId: props.conversationId,
+    senderUserId: Number(props.myUserId),
+    senderUserNo: props.myUserId,
+    content
+  });
+
+  // 서버 전송 (tempId 함께 넘겨야 함)
+  props.onSend({
+    receiverUserId: props.peerUserId,
+    content,
+    conversationId: props.conversationId,
+    tempId
+  });
 
   text.value = '';
 };
+
 
 const formatTime = (t?: string) => {
   if (!t) return '';
@@ -74,7 +79,7 @@ watch(
     </header>
 
     <div class="dm__body">
-      <div class="msg-list" ref="listRef">
+      <div ref="listRef" class="msg-list">
         <div v-for="(m, idx) in messages" :key="m.messageId ?? `${m.sentAt}-${idx}`" class="msg" :class="{ mine: String(m.senderUserId) === String(myUserId) }">
           <div class="bubble">
             <div class="content">{{ m.content }}</div>

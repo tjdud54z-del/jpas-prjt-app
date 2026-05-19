@@ -1,55 +1,197 @@
-<script setup>
+<script setup lang="ts">
 import { http } from '@/api/common/http'
-// import { useConfirm } from '@/composables/useConfirm';
 import { useLayout } from '@/layout/composables/layout'
-import { useConfirm } from 'primevue/useconfirm'
-import { useToast } from 'primevue/usetoast'
+// import { useConfirm } from 'primevue/useconfirm' // 툴바형식
+import { useConfirm } from '@/composables/useConfirm'
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import AppConfigurator from './AppConfigurator.vue'
 
-const router = useRouter()
 
-// const { openConfirm } = useConfirm();
+
+// DM imports
+import { markConversationRead } from '@/api/dmApi'
+import DmModal from '@/components/dm/DmModal.vue'
+import DmModalPanel from '@/components/dm/DmModalPanel.vue'
+import { useDmClient } from '@/composables/useDmClient'
+import { useDmStore } from '@/store/dmStore'
+import DmConversationList from '@/views/pages/dm/DmConversationList.vue'
+
+const router = useRouter()
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout()
 
-const toast = useToast()
-const confirmPopup = useConfirm()
+/** Drawer 표시 상태 */
+const visibleRight = ref(false)
+// const confirmPopup = useConfirm()
+const { openConfirm } = useConfirm()
 
-// 로그아웃 팝업창
-// const logout = async () => {
-//     const ok = await openConfirm('로그아웃 하시겠습니까?');
-//     if (!ok) return;
+/** =========================
+ *  로그인 사용자 (localStorage.userInfo 파싱)
+ *  - userInfo가 "객체 문자열"로 저장된 케이스 + (혹시) wrapper.userInfo 문자열 케이스 둘 다 대응
+ * ========================= */
+const currentUser = computed(() => {
+  const raw = localStorage.getItem('userInfo')
+  if (!raw) return null
 
-//     // stopSessionTimer();
-//     localStorage.clear();
-//     delete http.defaults.headers.common.Authorization;
-//     router.push('/login');
-// };
+  try {
+    const parsed = JSON.parse(raw)
+    // 케이스1) localStorage.userInfo = {"userId":...,"profileImagePath":...}
+    if (parsed && typeof parsed === 'object' && parsed.userId) return parsed
+    // 케이스2) localStorage.userInfo = {"userInfo":"{...}"} 형태
+    if (parsed?.userInfo && typeof parsed.userInfo === 'string') return JSON.parse(parsed.userInfo)
+    return parsed
+  } catch {
+    return null
+  }
+})
 
-// 로그아웃 라인딩 팝업창
-const confirm = async (event) => {
-  confirmPopup.require({
-    target: event.target,
-    message: '로그아웃 하시겠습니까?',
-    icon: 'pi pi-exclamation-triangle',
-    rejectProps: {
-      label: '취소',
-      severity: 'secondary',
-      outlined: true
-    },
-    acceptProps: {
-      label: '로그아웃'
-    },
-    accept: () => {
-      // toast.add({ severity: 'info', summary: 'Confirmed', detail: 'You have accepted', life: 3000 });
-      localStorage.clear()
-      delete http.defaults.headers.common.Authorization
-      router.push('/login')
-    },
-    reject: () => {
-      // toast.add({ severity: 'info', summary: 'Rejected', detail: 'You have rejected', life: 3000 });
+const myUserId = computed(() => Number(currentUser.value?.userId || 0))
+const myUserNo = computed(() => String(currentUser.value?.userNo || ''))
+const myGender = computed(() => String(currentUser.value?.genderFlag || ''))
+
+/** 프로필 이미지 캐시 무효화용 키 (프로필 경로가 바뀔 때만 갱신) */
+const avatarCacheKey = ref(Date.now())
+watch(
+  () => currentUser.value?.profileImagePath,
+  () => {
+    avatarCacheKey.value = Date.now()
+  }
+)
+
+const profileImgSrc = computed(() => {
+  const path = currentUser.value?.profileImagePath
+  if (!path) {
+    if (myGender.value === 'M') return 'http://localhost:8080/uploads/basicM.jpg'
+    if (myGender.value === 'W') return 'http://localhost:8080/uploads/basicW.jpg'
+  }
+  const baseUrl = 'http://localhost:8080'
+  return `${baseUrl}${path}?t=${Date.now()}`
+})
+
+/** 프로필 드롭다운 */
+const userMenuOpen = ref(false)
+const userMenuRef = ref<HTMLElement | null>(null)
+
+const toggleUserMenu = () => {
+  userMenuOpen.value = !userMenuOpen.value
+}
+const closeUserMenu = () => {
+  userMenuOpen.value = false
+}
+const goMyPage = () => {
+  closeUserMenu()
+  router.push('/mypage') // 필요시 라우트 변경
+}
+
+/** 바깥 클릭/ESC로 닫기 */
+const onDocClick = (e: MouseEvent) => {
+  if (!userMenuOpen.value) return
+  const el = userMenuRef.value
+  const target = e.target as Node
+  if (el && el.contains(target)) return
+  closeUserMenu()
+}
+const onDocKeydown = (e: KeyboardEvent) => {
+  if (e.key === 'Escape') closeUserMenu()
+}
+
+/** =========================
+ *  DM 상태/스토어/소켓
+ * ========================= */
+const dmOpen = ref(false)
+const activeConversationId = ref<number | null>(null)
+const peerUserNo = ref('')
+const peerUserId = ref<number>(0)
+
+const store = useDmStore()
+const { connect, disconnect, connected } = useDmClient()
+
+/** Drawer 리스트 클릭 → Drawer 닫고, 모달 오픈 */
+const onOpenFromDrawer = async (item: any) => {
+  if (!item?.conversationId) return
+
+  // Drawer 닫기
+  visibleRight.value = false
+  await nextTick()
+
+  activeConversationId.value = item.conversationId
+  peerUserNo.value = item.peerUserNo
+  peerUserId.value = item.peerUserId
+
+  store.setActiveConversation(item.conversationId)
+  await store.fetchMessages(item.conversationId)
+
+  dmOpen.value = true
+}
+
+/** WebSocket 연결 (DM 수신 + 현재 방이면 즉시 읽음 처리) */
+onMounted(() => {
+  connect((msg: any) => {
+    // 내가 보낸 메시지는 제외
+    if (String(msg.senderUserId) === String(myUserId.value)) return
+
+    store.addMessage(msg)
+
+    if (store.activeConversationId === msg.conversationId) {
+      markConversationRead(msg.conversationId, myUserId.value)
     }
   })
+
+  document.addEventListener('click', onDocClick)
+  document.addEventListener('keydown', onDocKeydown)
+})
+
+onUnmounted(() => {
+  disconnect()
+  document.removeEventListener('click', onDocClick)
+  document.removeEventListener('keydown', onDocKeydown)
+})
+
+/** 모달 닫힐 때 목록 갱신 */
+watch(dmOpen, (open) => {
+  if (!open) {
+    store.triggerConversationListReload()
+  }
+})
+
+/** Drawer 열릴 때도 목록 최신화 */
+watch(visibleRight, (open) => {
+  if (open) {
+    store.triggerConversationListReload()
+  }
+})
+
+/** 로그아웃 confirm */
+// const confirm = (event: any) => {
+//   confirmPopup.require({
+//     target: event?.target,
+//     message: '로그아웃 하시겠습니까?',
+//     icon: 'pi pi-exclamation-triangle',
+//     rejectProps: {
+//       label: '취소',
+//       severity: 'secondary',
+//       outlined: true
+//     },
+//     acceptProps: {
+//       label: '로그아웃'
+//     },
+//     accept: () => {
+//       localStorage.clear()
+//       delete http.defaults.headers.common.Authorization
+//       router.push('/login')
+//     },
+//     reject: () => {}
+//   })
+// }
+const confirm = async (e: any) => {
+
+  const ok = await openConfirm('로그아웃 하시겠습니까?')
+  if (!ok) return
+
+  localStorage.clear()
+  delete http.defaults.headers.common.Authorization
+  router.push('/login')
+
 }
 </script>
 
@@ -59,6 +201,7 @@ const confirm = async (event) => {
       <button class="layout-menu-button layout-topbar-action" @click="toggleMenu">
         <i class="pi pi-bars"></i>
       </button>
+
       <router-link to="/dashboard" class="layout-topbar-logo">
         <svg viewBox="0 0 54 40" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -75,7 +218,6 @@ const confirm = async (event) => {
               fill="var(--primary-color)" />
           </g>
         </svg>
-
         <span>J-P-A-S</span>
       </router-link>
     </div>
@@ -88,9 +230,17 @@ const confirm = async (event) => {
 
         <div class="relative">
           <button
-            v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'p-anchored-overlay-enter-active', leaveToClass: 'hidden', leaveActiveClass: 'p-anchored-overlay-leave-active', hideOnOutsideClick: true }"
+            v-styleclass="{
+              selector: '@next',
+              enterFromClass: 'hidden',
+              enterActiveClass: 'p-anchored-overlay-enter-active',
+              leaveToClass: 'hidden',
+              leaveActiveClass: 'p-anchored-overlay-leave-active',
+              hideOnOutsideClick: true
+            }"
             type="button"
-            class="layout-topbar-action layout-topbar-action-highlight">
+            class="layout-topbar-action layout-topbar-action-highlight"
+          >
             <i class="pi pi-palette"></i>
           </button>
           <AppConfigurator />
@@ -98,8 +248,16 @@ const confirm = async (event) => {
       </div>
 
       <button
+        v-styleclass="{
+          selector: '@next',
+          enterFromClass: 'hidden',
+          enterActiveClass: 'p-anchored-overlay-enter-active',
+          leaveToClass: 'hidden',
+          leaveActiveClass: 'p-anchored-overlay-leave-active',
+          hideOnOutsideClick: true
+        }"
         class="layout-topbar-menu-button layout-topbar-action"
-        v-styleclass="{ selector: '@next', enterFromClass: 'hidden', enterActiveClass: 'p-anchored-overlay-enter-active', leaveToClass: 'hidden', leaveActiveClass: 'p-anchored-overlay-leave-active', hideOnOutsideClick: true }">
+      >
         <i class="pi pi-ellipsis-v"></i>
       </button>
 
@@ -107,22 +265,133 @@ const confirm = async (event) => {
         <div class="layout-topbar-menu-content">
           <button type="button" class="layout-topbar-action">
             <i class="pi pi-calendar"></i>
-            <span>Calendar</span>
+            <span>캘린더</span>
           </button>
-          <button type="button" class="layout-topbar-action">
-            <i class="pi pi-inbox"></i>
-            <span>Messages</span>
+
+          <!-- 채팅 버튼 -->
+          <button type="button" class="layout-topbar-action" @click="visibleRight = true">
+            <i class="pi pi-comment"></i>
+            <span>채팅</span>
           </button>
-          <button type="button" class="layout-topbar-action">
-            <i class="pi pi-user"></i>
-            <span>Profile</span>
-          </button>
-          <button type="button" class="layout-topbar-action" @click="confirm">
-            <i class="pi pi-fw pi-sign-in layout-menuitem-icon" style="color: red"></i>
-          </button>
+
+          <Drawer v-model:visible="visibleRight" header="채팅" position="right" style="width: 336px;">
+            <DmConversationList @open="onOpenFromDrawer" />
+          </Drawer>
+
+          <!-- 프로필(이미지+성명) + 드롭다운 -->
+          <div ref="userMenuRef" class="layout-topbar-user">
+            <button type="button" class="user-info-btn" @click="toggleUserMenu">
+              <img class="user-avatar" :src="profileImgSrc" alt="avatar" />
+              <span class="user-name">{{ currentUser?.name || '' }}</span>
+              <i class="pi pi-angle-down"></i>
+            </button>
+
+            <div v-if="userMenuOpen" class="user-dropdown">
+              <button type="button" class="dropdown-item" @click="goMyPage">
+                <i class="pi pi-user"></i>
+                <span>마이페이지</span>
+              </button>
+
+              <button type="button" class="dropdown-item danger" @click="(e) => { closeUserMenu(); confirm(e) }">
+                <i class="pi pi-sign-out"></i>
+                <span>로그아웃</span>
+              </button>
+            </div>
+          </div>
+
           <ConfirmPopup></ConfirmPopup>
         </div>
       </div>
     </div>
+
+    <!-- DM 모달 -->
+    <DmModal v-model:open="dmOpen">
+      <DmModalPanel
+        v-if="activeConversationId"
+        :connected="connected"
+        :my-user-id="myUserId"
+        :my-user-no="myUserNo"
+        :peer-user-id="peerUserId"
+        :peer-user-no="peerUserNo"
+        :conversation-id="activeConversationId"
+        @update:open="dmOpen = $event"
+      />
+    </DmModal>
   </div>
 </template>
+
+<style scoped>
+/* 프로필 영역 */
+.layout-topbar-user {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  margin-left: 8px;
+}
+
+.user-info-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 8px;
+}
+
+.user-info-btn:hover {
+  background: rgba(0, 0, 0, 0.04);
+}
+
+.user-avatar {
+  width: 30px;
+  height: 30px;
+  border-radius: 999px;
+  object-fit: cover;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.user-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #111827;
+  white-space: nowrap;
+}
+
+/* 드롭다운 */
+.user-dropdown {
+  position: absolute;
+  top: 42px;
+  right: 0;
+  width: 160px;
+  background: #fff;
+  border: 1px solid rgba(0,0,0,0.10);
+  border-radius: 10px;
+  box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+  overflow: hidden;
+  z-index: 2000;
+}
+
+.dropdown-item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #fff;
+  border: 0;
+  cursor: pointer;
+  font-size: 13px;
+  color: #111827;
+  text-align: left;
+}
+
+.dropdown-item:hover {
+  background: #f3f4f6;
+}
+
+.dropdown-item.danger {
+  color: #dc2626;
+}
+</style>

@@ -8,7 +8,7 @@ import { http } from '@/api/common/http'
  * - JPA_API       : 상태 변경(CUD)용 API (JPA 사용)
  */
 const READ_ONLY_API = '/api/query/cmmnCd'
-const JPA_API = '/api/jpa/cmmnCd'
+const JPA_API = '/api/jpa'
 
 /**
  * ===============================
@@ -36,8 +36,12 @@ export interface CmmnCd {
   attr0: string // 속성10
   createdAt: string // 생성일시
   createdUserId: number // 생성유저
+  createdUserName: string // 생서유저명
   updatedAt: string // 수정일시
   updatedUserId: number // 수정유저
+  updatedUserName: string // 수정유저명
+  value: string // 공통코드 selectbox용
+  lavel: string // 공통코드명 selectbox용
 }
 
 /**
@@ -54,9 +58,62 @@ export interface CommonParams {
 
 /**
  * ===============================
+ * 공통코드 저장(JPA) DTO
+ * ===============================
+ */
+export interface CmmnCdDto {
+  crudType: 'I' | 'U' | 'D'
+  commonCode: string
+  commonCodeName?: string
+  activeYn?: string
+  sortOrder?: number
+  description?: string
+  attr1?: string
+  attr2?: string
+  attr3?: string
+  attr4?: string
+  attr5?: string
+  attr6?: string
+  attr7?: string
+  attr8?: string
+  attr9?: string
+  attr10?: string
+  createdUserId?: number
+  updatedUserId?: number
+}
+
+/**
+ * ===============================
+ * 서브공통코드 저장 (CUD, JPA)
+ * ===============================
+ */
+export interface CmmnCdDtl {
+  crudType: 'I' | 'U' | 'D'
+  commonCode: string
+  commonCodeDtl: string
+  commonCodeDtlName?: string
+  activeYn?: string
+  sortOrder?: number
+  description?: string
+  attr1?: string
+  attr2?: string
+  attr3?: string
+  attr4?: string
+  attr5?: string
+  attr6?: string
+  attr7?: string
+  attr8?: string
+  attr9?: string
+  attr10?: string
+  createdUserId?: number
+  updatedUserId?: number
+}
+
+/**
+ * ===============================
  * 공통코드 검색 조회 API
  * ===============================
- * POST /api/query/cmmnCd/search/CmmnCdList
+ * POST /api/query/cmmnCd/CmmnCdList
  *
  * @param param 공통 CommonParams
  */
@@ -73,7 +130,7 @@ export function fetchCmmnCdByCondition(
  * ===============================
  * 서브코드 검색 조회 API
  * ===============================
- * POST /api/query/cmmnCd/search/CmmnCdDtlList
+ * POST /api/query/cmmnCd/CmmnCdDtlList
  *
  * @param param 공통 CommonParams
  */
@@ -83,5 +140,49 @@ export function fetchCmmnCdDtlByCondition(
   return http.post<CmmnCd[]>(
     `${READ_ONLY_API}/cmmnCdDtlList`,
     param
+  )
+}
+
+/**
+ * ===============================
+ * selectbox 옵션을 검색 조회 API
+ * ===============================
+ * POST /api/query/cmmnCd/selectOption
+ *
+ * @param param 공통 CommonParams
+ */
+export function fetchCmmnCdSelectOptionByCondition(
+  param: CommonParams
+) {
+  return http.post<CmmnCd[]>(
+    `${READ_ONLY_API}/selectOption`,
+    param
+  )
+}
+
+/**
+ * ===============================
+ * 공통코드 저장 (CUD, JPA)
+ * ===============================
+ * POST /api/jpa/cmmnCd/batch
+ *
+ * @param payload CmmnCdDto[]
+ */
+export function saveCommonCodes(payload: CmmnCdDto[]) {
+  return http.post<void>(`${JPA_API}/cmmnCd/batch`, payload)
+}
+
+/**
+ * ===============================
+ * 서브코드 저장 (CUD, JPA)
+ * ===============================
+ * POST /api/jpa/cmmnCd/batch
+ *
+ * @param payload CmmnCdDto[]
+ */
+export function saveCommonCodeDtls(payload: CmmnCdDtl[]) {
+  return http.post<void>(
+    `${JPA_API}/cmmnCdDtl/batch`,
+    payload
   )
 }
