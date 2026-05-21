@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { markConversationRead, sendDmMessage } from '@/api/dmApi'
-import type { DmPayload } from '@/composables/useDmClient'
-import { useDmStore } from '@/store/dmStore'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { markConversationRead, sendDmMessage } from '@/api/dmApi';
+import type { DmPayload } from '@/composables/useDmClient';
+import { useDmStore } from '@/store/dmStore';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
   connected: boolean
@@ -14,8 +14,12 @@ const props = defineProps<{
   onSend?: (payload: { receiverUserId: number; content: string; conversationId: number }, onLocalMessage?: (msg: DmPayload) => void) => void
 }>()
 
+// const emit = defineEmits<{
+//   (e: 'update:open', v: boolean): void
+// }>()
+
 const emit = defineEmits<{
-  (e: 'update:open', v: boolean): void
+  (e: 'close'): void
 }>()
 
 const store = useDmStore()
@@ -138,11 +142,12 @@ watch(messages, () => {
           {{ connected ? 'ONLINE' : 'OFFLINE' }}
         </span>
       </div>
-      <button class="dm__close" @click="emit('update:open', false)">✕</button>
+      <!-- <button class="dm__close" @click="emit('update:open', false)">✕</button> -->
+      <button class="dm__close" @click="emit('close')">✕</button>
     </header>
 
     <div class="dm__body">
-      <div class="msg-list" ref="listRef">
+      <div ref="listRef" class="msg-list">
         <template v-for="(m, idx) in messages" :key="m.messageId ?? m.tempId">
           <div v-if="isNewDate(idx)" class="date-divider">
             {{ formatDateLabel(m.sentAt) }}

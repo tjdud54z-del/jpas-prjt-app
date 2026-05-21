@@ -309,14 +309,14 @@ const confirm = async (e: any) => {
     <!-- DM 모달 -->
     <DmModal v-model:open="dmOpen">
       <DmModalPanel
-        v-if="activeConversationId"
+        v-if="dmOpen && activeConversationId"
         :connected="connected"
         :my-user-id="myUserId"
         :my-user-no="myUserNo"
         :peer-user-id="peerUserId"
         :peer-user-no="peerUserNo"
         :conversation-id="activeConversationId"
-        @update:open="dmOpen = $event"
+        @close="dmOpen = false"
       />
     </DmModal>
   </div>

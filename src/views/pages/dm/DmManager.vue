@@ -263,13 +263,14 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
     <!-- DM -->
     <DmModal v-model:open="dmOpen">
       <DmModalPanel
-        v-if="activeConversationId"
+        v-if="dmOpen && activeConversationId"
         :connected="connected"
         :my-user-id="myUserId"
         :my-user-no="myUserNo"
         :peer-user-id="peerUserId"
         :peer-user-no="peerUserNo"
         :conversation-id="activeConversationId"
+        @close="dmOpen = false"
       />
     </DmModal>
   </div>
