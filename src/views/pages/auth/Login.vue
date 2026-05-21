@@ -52,9 +52,12 @@ const login = async () => {
 </script>
 
 <template>
+  <!-- <div
+    class="min-h-screen w-full px-6 md:px-20 lg:px-80 flex items-center justify-center backdrop-blur-3xl bg-cover bg-center bg-no-repeat"
+    style="background-image: url('/src/assets/mainBackground.png')"> -->
   <div
     class="min-h-screen w-full px-6 md:px-20 lg:px-80 flex items-center justify-center backdrop-blur-3xl bg-cover bg-center bg-no-repeat"
-    style="background-image: url('/src/assets/mainBackground.png')">
+    style="background-image: url('https://fqjltiegiezfetthbags.supabase.co/storage/v1/object/public/block.images/blocks/signin/signin-glass.jpg')">
     <div class="px-8 md:px-12 lg:px-20 py-12 flex flex-col items-center gap-12 w-full max-w-sm backdrop-blur-2xl rounded-2xl bg-amber-600/10 border">
       <!-- 로고 -->
       <div class="flex flex-col items-center gap-4 w-full">
