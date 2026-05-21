@@ -54,14 +54,14 @@ const login = async () => {
 <template>
   <div
     class="min-h-screen w-full px-6 md:px-20 lg:px-80 flex items-center justify-center backdrop-blur-3xl bg-cover bg-center bg-no-repeat"
-    style="background-image: url('https://fqjltiegiezfetthbags.supabase.co/storage/v1/object/public/block.images/blocks/signin/signin-glass.jpg')">
-    <div class="px-8 md:px-12 lg:px-20 py-12 flex flex-col items-center gap-12 w-full max-w-sm backdrop-blur-2xl rounded-2xl bg-white/10 border border-white/10">
+    style="background-image: url('/src/assets/mainBackground.png')">
+    <div class="px-8 md:px-12 lg:px-20 py-12 flex flex-col items-center gap-12 w-full max-w-sm backdrop-blur-2xl rounded-2xl bg-amber-600/10 border">
       <!-- 로고 -->
       <div class="flex flex-col items-center gap-4 w-full">
-        <img src="@/assets/vue.svg" alt="JPAS Logo" class="h-14 w-14 object-contain" />
+        <img src="/src/assets/logo.png" alt="Logo" class="h-24 w-24 object-contain rounded-4xl" />
         <div class="text-center">
-          <div class="text-3xl font-medium text-white">J-P-A-S</div>
-          <div class="mt-2 text-white/80 text-sm">
+          <div class="text-3xl font-medium text-black">MPC</div>
+          <div class="mt-2 text-black/80 text-sm">
             계정이 없으신가요?
             <span class="underline cursor-pointer">가입하기</span>
           </div>
@@ -71,19 +71,19 @@ const login = async () => {
       <div class="flex flex-col gap-6 w-full">
         <form class="flex flex-col gap-6 w-full" @submit.prevent="login">
           <IconField>
-            <InputIcon class="pi pi-user text-white/70" />
-            <InputText v-model="userNo" class="w-full bg-white/10 text-white placeholder:text-white/70 rounded-3xl border border-white/10" placeholder="계정" />
+            <InputIcon class="pi pi-user text-black/70" />
+            <InputText v-model="userNo" class="w-full bg-black/10 text-black placeholder:text-black/70 rounded-3xl border border-black/10" placeholder="계정" />
           </IconField>
 
           <IconField>
-            <InputIcon class="pi pi-lock text-white/70" />
-            <InputText v-model="password" type="password" class="w-full bg-white/10 text-white placeholder:text-white/70 rounded-3xl border border-white/10" placeholder="비밀번호" />
+            <InputIcon class="pi pi-lock text-black/70" />
+            <InputText v-model="password" type="password" class="w-full bg-black/10 text-black placeholder:text-black/70 rounded-3xl border border-black/10" placeholder="비밀번호" />
           </IconField>
 
-          <Button label="로그인" class="w-full rounded-3xl bg-surface-950 border-surface-950 text-white" :loading="loading" type="submit" />
+          <Button label="로그인" class="w-full rounded-3xl bg-surface-950 border-surface-950 text-black" :loading="loading" type="submit" />
         </form>
       </div>
-      <a class="text-white/80 text-sm cursor-pointer hover:text-white"> 비밀번호를 잊어버리셨나요? </a>
+      <a class="text-black/80 text-sm cursor-pointer hover:text-black"> 비밀번호를 잊어버리셨나요? </a>
     </div>
   </div>
 </template>
