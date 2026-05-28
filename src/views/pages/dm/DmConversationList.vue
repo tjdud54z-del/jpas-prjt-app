@@ -22,7 +22,7 @@ const getProfileImg = (genderFlag?: string, path?: string) => {
   return `${baseUrl}${path}?t=${Date.now()}`
 }
 
-/** ✅ ONLINE 상태 확인 함수 */
+/** ONLINE 상태 확인 함수 */
 const isUserOnline = (userId: string) => {
   return store.onlineUsers[userId] ?? false
 }
@@ -87,14 +87,14 @@ onMounted(load)
         class="dm-item"
         @click="onClick(c)"
       >
-        <!-- ✅ 프로필 + ONLINE 상태 -->
+        <!-- 프로필 + ONLINE 상태 -->
         <div class="avatar-wrapper">
           <img
             :src="getProfileImg(c.peerGenderFlag, c.peerProfileImagePath)"
             class="avatar-img"
           />
 
-          <!-- ✅ ONLINE 점 -->
+          <!-- ONLINE 점 -->
           <span
             class="status-dot"
             :class="{ on: isUserOnline(c.peerUserNo) }"

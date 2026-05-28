@@ -9,7 +9,7 @@ declare global {
 
 /** DM Payload */
 export interface DmPayload {
-  type?: string // ✅ PRESENCE 구분용 추가
+  type?: string // PRESENCE 구분용 추가
 
   conversationId: number
   messageId?: number
@@ -20,7 +20,7 @@ export interface DmPayload {
   content?: string
   sentAt?: string
 
-  // ✅ PRESENCE용
+  // PRESENCE용
   userId?: any
   status?: 'ONLINE' | 'OFFLINE'
 }
@@ -30,7 +30,7 @@ export function useDmClient() {
   const client = ref<any>(null)
   const connected = ref(false)
 
-  const store = useDmStore() // ✅ 추가
+  const store = useDmStore() // 추가
 
   /** WebSocket 연결 */
   const connect = (onMessage: (msg: DmPayload) => void) => {
@@ -47,10 +47,10 @@ export function useDmClient() {
 
       onConnect: () => {
         connected.value = true
-        console.log('✅ STOMP CONNECTED')
+        console.log('✅ STOMP CONNECTED > 열림')
 
         /** =========================
-         * ✅ DM 메시지 구독
+         * DM 메시지 구독
          * ========================= */
         c.subscribe('/user/queue/dm', (frame: any) => {
           const msg: DmPayload = JSON.parse(frame.body)
@@ -58,7 +58,7 @@ export function useDmClient() {
         })
 
         /** =========================
-         * ✅ ✅ PRESENCE 구독 (핵심 추가)
+         * PRESENCE 구독 (핵심 추가)
          * ========================= */
         c.subscribe('/topic/presence', (frame: any) => {
           const data: DmPayload = JSON.parse(frame.body)
@@ -86,7 +86,7 @@ export function useDmClient() {
 
       onDisconnect: () => {
         connected.value = false
-        console.log('❌ STOMP DISCONNECTED')
+        console.log('❌ STOMP DISCONNECTED > 닫힘')
       }
     })
 
