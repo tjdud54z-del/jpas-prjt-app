@@ -29,6 +29,12 @@ const store = useDmStore()
 const text = ref('')
 const listRef = ref<HTMLDivElement | null>(null)
 
+
+const isPeerOnline = computed(() => {
+  return store.onlineUsers[props.peerUserNo] ?? false
+})
+
+
 /** 상대방이 마지막으로 읽은 메시지 ID */
 const peerLastReadMessageId = computed(() => store.peerLastReadMessageId)
 
@@ -155,9 +161,11 @@ watch(messages, () => {
         :src="getProfileImg(peerGenderFlag, peerProfileImagePath)" />
       <div class="dm__title-row">
         <strong>채팅창</strong>
-        <span class="badge" :class="{ on: connected }">
-          {{ connected ? 'ONLINE' : 'OFFLINE' }}
+        
+        <span class="badge" :class="{ on: isPeerOnline }">
+          {{ isPeerOnline ? 'ONLINE' : 'OFFLINE' }}
         </span>
+
       </div>
       <!-- <button class="dm__close" @click="emit('update:open', false)">✕</button> -->
       <button class="dm__close" @click="emit('close')">✕</button>
@@ -179,7 +187,7 @@ watch(messages, () => {
               <div class="content">{{ m.content }}</div>
               <div class="time">
                 <!-- 여기 isRead 로직만 변경됨 -->
-                <!-- <span v-if="isRead(m)" class="read">✔</span> -->
+                <span v-if="isRead(m)" class="read">✔</span>
                 {{ formatTime(m.sentAt) }}
               </div>
             </div>

@@ -4,7 +4,7 @@ import DmModalPanel from '@/components/dm/DmModalPanel.vue'
 import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
 import DmConversationList from './DmConversationList.vue'
 
-import { markConversationRead, openConversation } from '@/api/dmApi'
+import { openConversation } from '@/api/dmApi'
 import { fetchUsersByCondition, type User } from '@/api/userApi'
 import { useDmClient } from '@/composables/useDmClient'
 import { useDmStore } from '@/store/dmStore'
@@ -166,20 +166,20 @@ const onOpenFromList = async (item: any) => {
 }
 
 /** WebSocket */
-onMounted(() => {
-  connect((msg) => {
-    if (String(msg.senderUserId) === String(myUserId.value)) return
-    store.addMessage(msg)
+// onMounted(() => {
+//   connect((msg) => {
+//     if (String(msg.senderUserId) === String(myUserId.value)) return
+//     store.addMessage(msg)
 
-    if (store.activeConversationId === msg.conversationId) {
-      markConversationRead(msg.conversationId, myUserId.value)
-    }
-  })
-})
+//     if (store.activeConversationId === msg.conversationId) {
+//       markConversationRead(msg.conversationId, myUserId.value)
+//     }
+//   })
+// })
 
-onUnmounted(() => {
-  disconnect()
-})
+// onUnmounted(() => {
+//   disconnect()
+// })
 
 watch(dmOpen, (open) => {
   if (!open) store.triggerConversationListReload()

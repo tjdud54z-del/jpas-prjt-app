@@ -102,6 +102,9 @@ const dmOpen = ref(false)
 const activeConversationId = ref<number | null>(null)
 const peerUserNo = ref('')
 const peerUserId = ref<number>(0)
+const peerProfileImagePath = ref('')
+const peerGenderFlag = ref('')
+const peerUserName = ref('')
 
 const store = useDmStore()
 const { connect, disconnect, connected } = useDmClient()
@@ -117,6 +120,9 @@ const onOpenFromDrawer = async (item: any) => {
   activeConversationId.value = item.conversationId
   peerUserNo.value = item.peerUserNo
   peerUserId.value = item.peerUserId
+  peerProfileImagePath.value = item.peerProfileImagePath
+  peerGenderFlag.value = item.peerGenderFlag
+  peerUserName.value = item.peerUserName
 
   store.setActiveConversation(item.conversationId)
   await store.fetchMessages(item.conversationId)
@@ -129,6 +135,12 @@ onMounted(() => {
   connect((msg: any) => {
     // 내가 보낸 메시지는 제외
     if (String(msg.senderUserId) === String(myUserId.value)) return
+
+    // ✅ PRESENCE 처리
+    if (msg.type === 'PRESENCE') {
+      store.setUserOnline(msg.userId, msg.status === 'ONLINE')
+      return
+    }
 
     store.addMessage(msg)
 
@@ -187,6 +199,8 @@ const confirm = async (e: any) => {
 
   const ok = await openConfirm('로그아웃 하시겠습니까?')
   if (!ok) return
+
+  await disconnect()
 
   localStorage.clear()
   delete http.defaults.headers.common.Authorization
@@ -315,6 +329,9 @@ const confirm = async (e: any) => {
         :my-user-no="myUserNo"
         :peer-user-id="peerUserId"
         :peer-user-no="peerUserNo"
+        :peer-profile-image-path="peerProfileImagePath"
+        :peer-gender-flag="peerGenderFlag"
+        :peer-user-name="peerUserName"
         :conversation-id="activeConversationId"
         @close="dmOpen = false"
       />
