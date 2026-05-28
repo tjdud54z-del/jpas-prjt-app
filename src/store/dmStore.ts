@@ -98,7 +98,6 @@ export const useDmStore = defineStore('dm', () => {
   }
 
   /** WebSocket / 서버 수신 메시지 추가 */
-
   const addMessage = (msg: DmUiPayload) => {
     if (
       !msg.conversationId &&
@@ -236,16 +235,24 @@ export const useDmStore = defineStore('dm', () => {
     needReloadConversationList.value++
   }
 
+  /** 대화방 상태 표시 */
+  const onlineUsers = ref<Record<string, boolean>>({})
+  const setUserOnline = (
+    userId: string,
+    online: boolean
+  ) => {
+    onlineUsers.value[userId] = online
+  }
+
   return {
     // state
     messages,
     activeConversationId,
     peerLastReadMessageId,
     needReloadConversationList,
-
+    onlineUsers,
     // computed
     activeMessages,
-
     // actions
     setActiveConversation,
     setPeerLastReadMessageId,
@@ -256,6 +263,7 @@ export const useDmStore = defineStore('dm', () => {
     failMessage,
     setMessages,
     triggerConversationListReload,
+    setUserOnline,
     clear
   }
 })

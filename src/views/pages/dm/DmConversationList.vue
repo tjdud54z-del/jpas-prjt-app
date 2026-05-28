@@ -1,3 +1,4 @@
+
 <script setup lang="ts">
 import { fetchDmConversations, markConversationRead, type DmConversationListItem } from '@/api/dmApi';
 import { onMounted, ref, watch } from 'vue';
@@ -19,6 +20,11 @@ const getProfileImg = (genderFlag?: string, path?: string) => {
   }
   const baseUrl = 'http://localhost:8080'
   return `${baseUrl}${path}?t=${Date.now()}`
+}
+
+/** ✅ ONLINE 상태 확인 함수 */
+const isUserOnline = (userId: string) => {
+  return store.onlineUsers[userId] ?? false
 }
 
 /** 로그인 사용자 ID */
@@ -44,33 +50,29 @@ const load = async () => {
 const onClick = async (item: DmConversationListItem) => {
   const userId = getUserId()
 
-  // UI 먼저 즉시 반영 (낙관적 업데이트)
   if (item.unreadCount > 0) {
     item.unreadCount = 0
   }
 
-  // 대화방 화면 오픈
   emit('open', item)
 
-  // 백엔드에 읽음 처리 요청
   try {
     await markConversationRead(item.conversationId, userId)
   } catch (e) {
     console.error('읽음 처리 실패', e)
-    // 필요하면 여기서만 다시 load()로 동기화
-    // await load();
   }
 }
 
 watch(
   () => store.needReloadConversationList,
   async () => {
-    await load() // 기존 DM 리스트 조회 함수
+    await load()
   }
 )
 
 onMounted(load)
 </script>
+
 
 <template>
   <aside class="dm-list">
@@ -78,27 +80,25 @@ onMounted(load)
       <strong>채팅방</strong>
     </header>
 
-    <ul class="dm-list__body"> 
+    <ul class="dm-list__body">
       <li
         v-for="c in conversations"
         :key="c.conversationId"
         class="dm-item"
         @click="onClick(c)"
       >
-        <!-- 프로필 -->
-        <div class="avatar">
-          <!-- <img
-            v-if="c.peerProfileImagePath"
+        <!-- ✅ 프로필 + ONLINE 상태 -->
+        <div class="avatar-wrapper">
+          <img
             :src="getProfileImg(c.peerGenderFlag, c.peerProfileImagePath)"
             class="avatar-img"
           />
-          <div v-else class="avatar-fallback">
-            {{ c.peerUserName?.charAt(0) }}
-          </div>
-        </div> -->
-         <img
-            :src="getProfileImg(c.peerGenderFlag, c.peerProfileImagePath)"
-            class="avatar-img" />
+
+          <!-- ✅ ONLINE 점 -->
+          <span
+            class="status-dot"
+            :class="{ on: isUserOnline(c.peerUserNo) }"
+          ></span>
         </div>
 
         <!-- 본문 -->
@@ -116,13 +116,17 @@ onMounted(load)
             <span class="message">
               {{ c.lastMessage ?? '대화를 시작해보세요' }}
             </span>
+
             <span v-if="c.unreadCount > 0" class="badge">
               {{ c.unreadCount }}
             </span>
           </div>
         </div>
       </li>
-      <li v-if="!loading && conversations.length === 0" class="empty">대화가 없습니다</li>
+
+      <li v-if="!loading && conversations.length === 0" class="empty">
+        대화가 없습니다
+      </li>
     </ul>
   </aside>
 </template>
@@ -223,6 +227,12 @@ onMounted(load)
   height: 40px;
 }
 
+.avatar-wrapper {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
 .avatar-img {
   width: 100%;
   height: 100%;
@@ -238,6 +248,24 @@ onMounted(load)
   display: flex;
   align-items: center;
   justify-content: center;
+}
+
+/* ONLINE 상태 dot */
+.status-dot {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  transform: translate(5%, 5%);
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #babfc8;
+  border: 2px solid white;
+  box-shadow: 0 0 2px rgba(0,0,0,0.2);
+}
+
+.status-dot.on {
+  background: #22c55e;
 }
 
 .content {

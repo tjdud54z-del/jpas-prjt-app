@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { markConversationRead, sendDmMessage } from '@/api/dmApi'
-import type { DmPayload } from '@/composables/useDmClient'
-import { useDmStore } from '@/store/dmStore'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { markConversationRead, sendDmMessage } from '@/api/dmApi';
+import type { DmPayload } from '@/composables/useDmClient';
+import { useDmStore } from '@/store/dmStore';
+import { computed, nextTick, onMounted, ref, watch } from 'vue';
 
 const props = defineProps<{
   connected: boolean
@@ -10,17 +10,30 @@ const props = defineProps<{
   myUserId: number
   peerUserNo: string
   peerUserId: number
+  peerProfileImagePath?: string
+  peerGenderFlag?: string
+  peerUserName?: string
   conversationId: number
   onSend?: (payload: { receiverUserId: number; content: string; conversationId: number }, onLocalMessage?: (msg: DmPayload) => void) => void
 }>()
 
+// const emit = defineEmits<{
+//   (e: 'update:open', v: boolean): void
+// }>()
+
 const emit = defineEmits<{
-  (e: 'update:open', v: boolean): void
+  (e: 'close'): void
 }>()
 
 const store = useDmStore()
 const text = ref('')
 const listRef = ref<HTMLDivElement | null>(null)
+
+
+const isPeerOnline = computed(() => {
+  return store.onlineUsers[props.peerUserNo] ?? false
+})
+
 
 /** 상대방이 마지막으로 읽은 메시지 ID */
 const peerLastReadMessageId = computed(() => store.peerLastReadMessageId)
@@ -32,6 +45,17 @@ const messages = computed(() =>
     return new Date(a.sentAt ?? 0).getTime() - new Date(b.sentAt ?? 0).getTime()
   })
 )
+
+/* ==================================================
+   이미지 설정
+   ================================================== */
+const getProfileImg = (genderFlag?: string, path?: string) => {
+  if (!path) {
+    if (genderFlag === 'M') return 'http://localhost:8080/uploads/basicM.jpg'
+    if (genderFlag === 'W') return 'http://localhost:8080/uploads/basicW.jpg'
+  }
+  return `http://localhost:8080${path}?t=${Date.now()}`
+}
 
 /* ==================================================
    추가: 내가 보낸 메시지 중 "마지막" messageId
@@ -132,17 +156,23 @@ watch(messages, () => {
 <template>
   <section class="dm">
     <header class="dm__header">
+      <img
+        class="avatar"
+        :src="getProfileImg(peerGenderFlag, peerProfileImagePath)" />
       <div class="dm__title-row">
         <strong>채팅창</strong>
-        <span class="badge" :class="{ on: connected }">
-          {{ connected ? 'ONLINE' : 'OFFLINE' }}
+        
+        <span class="badge" :class="{ on: isPeerOnline }">
+          {{ isPeerOnline ? 'ONLINE' : 'OFFLINE' }}
         </span>
+
       </div>
-      <button class="dm__close" @click="emit('update:open', false)">✕</button>
+      <!-- <button class="dm__close" @click="emit('update:open', false)">✕</button> -->
+      <button class="dm__close" @click="emit('close')">✕</button>
     </header>
 
     <div class="dm__body">
-      <div class="msg-list" ref="listRef">
+      <div ref="listRef" class="msg-list">
         <template v-for="(m, idx) in messages" :key="m.messageId ?? m.tempId">
           <div v-if="isNewDate(idx)" class="date-divider">
             {{ formatDateLabel(m.sentAt) }}
@@ -157,7 +187,7 @@ watch(messages, () => {
               <div class="content">{{ m.content }}</div>
               <div class="time">
                 <!-- 여기 isRead 로직만 변경됨 -->
-                <!-- <span v-if="isRead(m)" class="read">✔</span> -->
+                <span v-if="isRead(m)" class="read">✔</span>
                 {{ formatTime(m.sentAt) }}
               </div>
             </div>
@@ -379,5 +409,26 @@ watch(messages, () => {
   padding: 0 14px;
   border-radius: 10px;
   cursor: pointer;
+}
+
+/* =========================
+   대화방 대상 이미지 영역
+========================= */
+.dm__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 </style>
