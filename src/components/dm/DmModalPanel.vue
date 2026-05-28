@@ -10,6 +10,9 @@ const props = defineProps<{
   myUserId: number
   peerUserNo: string
   peerUserId: number
+  peerProfileImagePath?: string
+  peerGenderFlag?: string
+  peerUserName?: string
   conversationId: number
   onSend?: (payload: { receiverUserId: number; content: string; conversationId: number }, onLocalMessage?: (msg: DmPayload) => void) => void
 }>()
@@ -36,6 +39,17 @@ const messages = computed(() =>
     return new Date(a.sentAt ?? 0).getTime() - new Date(b.sentAt ?? 0).getTime()
   })
 )
+
+/* ==================================================
+   이미지 설정
+   ================================================== */
+const getProfileImg = (genderFlag?: string, path?: string) => {
+  if (!path) {
+    if (genderFlag === 'M') return 'http://localhost:8080/uploads/basicM.jpg'
+    if (genderFlag === 'W') return 'http://localhost:8080/uploads/basicW.jpg'
+  }
+  return `http://localhost:8080${path}?t=${Date.now()}`
+}
 
 /* ==================================================
    추가: 내가 보낸 메시지 중 "마지막" messageId
@@ -136,6 +150,9 @@ watch(messages, () => {
 <template>
   <section class="dm">
     <header class="dm__header">
+      <img
+        class="avatar"
+        :src="getProfileImg(peerGenderFlag, peerProfileImagePath)" />
       <div class="dm__title-row">
         <strong>채팅창</strong>
         <span class="badge" :class="{ on: connected }">
@@ -384,5 +401,26 @@ watch(messages, () => {
   padding: 0 14px;
   border-radius: 10px;
   cursor: pointer;
+}
+
+/* =========================
+   대화방 대상 이미지 영역
+========================= */
+.dm__title-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 </style>

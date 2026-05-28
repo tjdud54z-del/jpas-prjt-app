@@ -28,9 +28,17 @@ const myUserNo = computed(() => String(currentUser.value?.userNo || ''))
 
 /** 상태 */
 const dmOpen = ref(false)
+
+/** 대화방ID */
 const activeConversationId = ref<number | null>(null)
+
+/** 대상유저정보 */
 const peerUserNo = ref('')
 const peerUserId = ref<number>(0)
+const peerProfileImagePath = ref('')
+const peerGenderFlag = ref('')
+const peerUserName = ref('')
+
 
 const store = useDmStore()
 const { connect, disconnect, connected } = useDmClient()
@@ -129,6 +137,10 @@ const onPickUser = async (u: User) => {
   activeConversationId.value = cid
   peerUserId.value = u.userId
   peerUserNo.value = u.userNo
+  peerProfileImagePath.value = u.profileImagePath
+  peerGenderFlag.value = u.genderFlag
+  peerUserName.value = u.name
+
 
   store.setActiveConversation(cid)
   await store.fetchMessages(cid)
@@ -143,6 +155,9 @@ const onOpenFromList = async (item: any) => {
   activeConversationId.value = item.conversationId
   peerUserNo.value = item.peerUserNo
   peerUserId.value = item.peerUserId
+  peerProfileImagePath.value = item.peerProfileImagePath
+  peerGenderFlag.value = item.peerGenderFlag
+  peerUserName.value = item.peerUserName
 
   store.setActiveConversation(item.conversationId)
   await store.fetchMessages(item.conversationId)
@@ -269,6 +284,9 @@ onUnmounted(() => document.removeEventListener('click', handleClickOutside))
         :my-user-no="myUserNo"
         :peer-user-id="peerUserId"
         :peer-user-no="peerUserNo"
+        :peer-profile-image-path="peerProfileImagePath"
+        :peer-gender-flag="peerGenderFlag"
+        :peer-user-name="peerUserName"
         :conversation-id="activeConversationId"
         @close="dmOpen = false"
       />
