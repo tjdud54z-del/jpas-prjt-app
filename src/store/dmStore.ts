@@ -245,15 +245,12 @@ export const useDmStore = defineStore('dm', () => {
   }
 
   return {
-    // state
     messages,
     activeConversationId,
     peerLastReadMessageId,
     needReloadConversationList,
     onlineUsers,
-    // computed
     activeMessages,
-    // actions
     setActiveConversation,
     setPeerLastReadMessageId,
     fetchMessages,

@@ -54,12 +54,12 @@ export function fetchUsersByCondition(
   return http.post<User[]>(`${READ_ONLY_API}/search`, param)
 }
 
-/** ✅ 유저 등록 */
+/** 유저 등록 */
 export function createUser(params: UserCommandParams) {
   return http.post<number>(`${JPA_API}`, params)
 }
 
-/** ✅ 유저 수정 */
+/** 유저 수정 */
 export function updateUser(params: UserCommandParams) {
   return http.put<void>(`${JPA_API}`, params)
 }

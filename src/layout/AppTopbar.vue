@@ -136,7 +136,7 @@ onMounted(() => {
     // 내가 보낸 메시지는 제외
     if (String(msg.senderUserId) === String(myUserId.value)) return
 
-    // ✅ PRESENCE 처리
+    // PRESENCE 처리
     if (msg.type === 'PRESENCE') {
       store.setUserOnline(msg.userId, msg.status === 'ONLINE')
       return
