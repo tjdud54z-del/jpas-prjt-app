@@ -46,6 +46,19 @@ const messages = computed(() =>
   })
 )
 
+/** 내가 보낸 메시지인지 */
+const isMine = (m: any) => {
+  return String(m.senderUserId) === String(props.myUserId)
+    || String(m.senderUserId) === String(props.myUserNo)
+}
+
+/** 이전 메시지와 같은 사람인지 */
+const isSameSender = (idx: number) => {
+  if (idx === 0) return false
+  return String(messages.value[idx - 1]?.senderUserId) === String(props.peerUserId) 
+    || String(messages.value[idx - 1]?.senderUserId) === String(props.peerUserNo)
+}
+
 /* ==================================================
    이미지 설정
    ================================================== */
@@ -61,7 +74,7 @@ const getProfileImg = (genderFlag?: string, path?: string) => {
    추가: 내가 보낸 메시지 중 "마지막" messageId
    ================================================== */
 const lastMyMessageId = computed<number | null>(() => {
-  const myMessages = messages.value.filter((m) => (String(m.senderUserId) === String(props.myUserId) || String(m.senderUserNo) === String(props.myUserNo)) && m.messageId)
+  const myMessages = messages.value.filter((m) => (String(m.senderUserId) === String(props.myUserId) || String(m.senderUserId) === String(props.myUserNo)) && m.messageId)
 
   if (myMessages.length === 0) return null
   return Math.max(...myMessages.map((m) => m.messageId!))
@@ -72,7 +85,7 @@ const lastMyMessageId = computed<number | null>(() => {
    ================================================== */
 const isRead = (m: any) => {
   // 1) 내 메시지인가?
-  const isMine = String(m.senderUserId) === String(props.myUserId) || String(m.senderUserNo) === String(props.myUserNo)
+  const isMine = String(m.senderUserId) === String(props.myUserId) || String(m.senderUserId) === String(props.myUserNo)
   if (!isMine) return false
 
   // 2) 서버 확정 메시지인가?
@@ -129,7 +142,7 @@ const handleSend = async () => {
     store.confirmMessage(tempId, {
       conversationId: res.data.conversationId,
       messageId: res.data.messageId,
-      sentAt: res.data.sentAt
+      sentAt: res.data.sentAt,
     })
   } catch (e) {
     store.failMessage(tempId)
@@ -156,44 +169,80 @@ watch(messages, () => {
 <template>
   <section class="dm">
     <header class="dm__header">
-      <img
+      <!-- <img
         class="avatar"
-        :src="getProfileImg(peerGenderFlag, peerProfileImagePath)" />
+        :src="getProfileImg(peerGenderFlag, peerProfileImagePath)" /> -->
       <div class="dm__title-row">
         <strong>채팅창</strong>
-        
         <span class="badge" :class="{ on: isPeerOnline }">
           {{ isPeerOnline ? 'ONLINE' : 'OFFLINE' }}
         </span>
-
       </div>
       <!-- <button class="dm__close" @click="emit('update:open', false)">✕</button> -->
       <button class="dm__close" @click="emit('close')">✕</button>
     </header>
 
     <div class="dm__body">
+    
       <div ref="listRef" class="msg-list">
         <template v-for="(m, idx) in messages" :key="m.messageId ?? m.tempId">
+
+          <!-- 날짜 -->
           <div v-if="isNewDate(idx)" class="date-divider">
             {{ formatDateLabel(m.sentAt) }}
           </div>
 
-          <div class="msg" :class="{ mine: m.senderUserId === myUserId || String(m.senderUserId) === String(myUserNo) }">
-            <div v-if="m.senderUserId !== myUserId && String(m.senderUserId) !== String(myUserNo)" class="sender-name">
-              {{ m.senderUserNm }}
-            </div>
+          <!-- 메시지 -->
+          <div class="msg" :class="{ mine: isMine(m) }">
 
-            <div class="bubble">
-              <div class="content">{{ m.content }}</div>
-              <div class="time">
-                <!-- 여기 isRead 로직만 변경됨 -->
-                <span v-if="isRead(m)" class="read">✔</span>
-                {{ formatTime(m.sentAt) }}
+            <!-- 상대 메시지 -->
+            <template v-if="!isMine(m)">
+              <div class="msg-row">
+
+                <!-- avatar (첫 메시지만) -->
+                <img
+                  v-if="!isSameSender(idx)"
+                  class="avatar"
+                  :src="getProfileImg(peerGenderFlag, peerProfileImagePath)"
+                />
+
+                <!-- avatar 자리 유지 (정렬용) -->
+                <div v-else class="avatar placeholder"></div>
+
+                <div class="bubble-wrap">
+
+                  <!-- 이름 (첫 메시지만) -->
+                  <div v-if="!isSameSender(idx)" class="sender-name">
+                    {{ peerUserName }}
+                  </div>
+
+                  <div class="bubble">
+                    <div class="content">{{ m.content }}</div>
+                    <div class="time">
+                      {{ formatTime(m.sentAt) }}
+                    </div>
+                  </div>
+
+                </div>
               </div>
-            </div>
+            </template>
+
+            <!-- 내 메시지 -->
+            <template v-else>
+              <div class="bubble mine-bubble">
+                <div class="content">{{ m.content }}</div>
+                <div class="time">
+                  <span v-if="isRead(m)" class="read">✔</span>
+                  {{ formatTime(m.sentAt) }}
+                </div>
+              </div>
+            </template>
+
           </div>
+
         </template>
       </div>
+
 
       <div class="input-row">
         <input v-model="text" class="input" placeholder="메시지를 입력하세요" @keydown.enter.prevent="handleSend" />
@@ -229,7 +278,7 @@ watch(messages, () => {
 
 .dm__title-row {
   display: flex;
-  align-items: center;
+  align-items: left;
   gap: 8px;
 }
 
@@ -273,14 +322,13 @@ watch(messages, () => {
   padding: 12px;
   background: #fafafa;
 }
-
 /* =========================
    메시지 단위 (핵심)
 ========================= */
 .msg {
   display: flex;
   flex-direction: column;
-  margin-bottom: 10px;
+  margin-bottom: 6px;
 }
 
 /* 내 메시지: 오른쪽 */
@@ -288,11 +336,18 @@ watch(messages, () => {
   align-items: flex-end;
 }
 
+.msg.mine + .msg.mine {
+  margin-top: -2px;
+}
+
 /* 상대 메시지: 왼쪽 */
 .msg:not(.mine) {
   align-items: flex-start;
 }
 
+.msg:not(.mine) + .msg:not(.mine) {
+  margin-top: -2px;
+}
 /* =========================
    상대방 이름
 ========================= */
@@ -310,7 +365,8 @@ watch(messages, () => {
   display: flex;
   align-items: flex-end;
   gap: 6px;
-  max-width: 75%;
+  /* max-width: calc(100% - 20px); */
+  max-width: 85%;
 }
 
 /* 상대방 메시지: [말풍선][시간] */
@@ -327,12 +383,42 @@ watch(messages, () => {
    말풍선
 ========================= */
 .content {
+  position: relative;
   background: #fff;
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 8px 10px;
+  border-radius: 14px;
+  padding: 8px 12px;
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+
+.msg:not(.mine) .content::before {
+  content: '';
+  position: absolute;
+  left: -6px;
+  top: 10px;
+
+  width: 0;
+  height: 0;
+
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-right: 6px solid #fff;
+}
+
+.msg:not(.mine) .content::after {
+  content: '';
+  position: absolute;
+  left: -7px;
+  top: 10px;
+
+  width: 0;
+  height: 0;
+
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-right: 7px solid #e5e7eb; /* 테두리 */
 }
 
 /* 내 메시지 말풍선 */
@@ -341,6 +427,45 @@ watch(messages, () => {
   border-color: #bfdbfe;
 }
 
+.msg.mine .content::before {
+  content: '';
+  position: absolute;
+  right: -6px;
+  top: 10px;
+
+  width: 0;
+  height: 0;
+
+  border-top: 6px solid transparent;
+  border-bottom: 6px solid transparent;
+  border-left: 6px solid #eff6ff;
+}
+
+.msg.mine .content::after {
+  content: '';
+  position: absolute;
+  right: -7px;
+  top: 10px;
+
+  width: 0;
+  height: 0;
+
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+  border-left: 7px solid #bfdbfe;
+}
+/* =========================
+   첫메세지만 말꼬리 모양 적용
+========================= */
+.msg:not(.mine) + .msg:not(.mine) .content::before,
+.msg:not(.mine) + .msg:not(.mine) .content::after {
+  display: none;
+}
+
+.msg.mine + .msg.mine .content::before,
+.msg.mine + .msg.mine .content::after {
+  display: none;
+}
 /* =========================
    시간 / 상태
 ========================= */
@@ -430,5 +555,22 @@ watch(messages, () => {
   display: flex;
   align-items: center;
   gap: 6px;
+}
+
+.msg-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+}
+
+.bubble-wrap {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+.mine-bubble {
+  align-self: flex-end;
 }
 </style>
