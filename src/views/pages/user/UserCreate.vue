@@ -299,24 +299,17 @@ const resetForm = () => {
 
         <!-- 기존 폼 -->
         <div class="form-grid cols-4">
-          <div class="form-field"><label>유저ID *</label><ElInputText v-model="userForm.userNo" /></div>
-          <div class="form-field"><label>비밀번호 *</label><ElInputText v-model="userForm.password" type="password" /></div>
-          <div class="form-field"><label>이름 *</label><ElInputText v-model="userForm.name" /></div>
-          <div class="form-field"><label>이메일 *</label><ElInputText v-model="userForm.email" /></div>
-
+          <div class="form-field"><label>유저ID</label><ElInputText v-model="userForm.userNo" /></div>
+          <div class="form-field"><label>비밀번호</label><ElInputText v-model="userForm.password" type="password" /></div>
+          <div class="form-field"><label>이름</label><ElInputText v-model="userForm.name" /></div>
+          <div class="form-field"><label>이메일</label><ElInputText v-model="userForm.email" /></div>
           <div class="form-field"><label>성별</label><ElSelectBox v-model="userForm.genderFlag" :options="genderOptions" /></div>
-          <div class="form-field"><label>전화번호</label><ElInputText v-model="userForm.phoneNumber" /></div>
-          <div class="form-field"><label>생년월일 *</label><ElDatePicker v-model="userForm.birthDate" /></div>
-
           <div class="form-field"><label>유형</label><ElSelectBox v-model="userForm.userType" :options="userTypeOptions" /></div>
+          <div class="form-field"><label>전화번호</label><ElInputText v-model="userForm.phoneNumber" /></div>
+          <div class="form-field"><label>생년월일</label><ElDatePicker v-model="userForm.birthDate" /></div>
           <div class="form-field"><label>상태</label><ElSelectBox v-model="userForm.activeYn" :options="activeOptions" /></div>
-
-          <div class="form-field" style="grid-column: span 2;">
-            <label>주소</label><ElInputText v-model="userForm.addressMain" />
-          </div>
-          <div class="form-field" style="grid-column: span 2;">
-            <label>상세주소</label><ElInputText v-model="userForm.addressSub" />
-          </div>
+          <div class="form-field" style="grid-column: span 2;"><label>주소</label><ElInputText v-model="userForm.addressMain" /></div>
+          <div class="form-field"><label>상세주소</label><ElInputText v-model="userForm.addressSub" /></div>
         </div>
 
       </div>
@@ -325,7 +318,6 @@ const resetForm = () => {
 </template>
 
 <style scoped>
-/* 꼭 필요한 것만 남김 */
 .flex-header { display:flex; justify-content:space-between; align-items:center; }
 .header-actions { display:flex; gap:8px; }
 .hidden-file-input { display:none; }

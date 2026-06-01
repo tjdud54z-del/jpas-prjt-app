@@ -61,9 +61,10 @@ const login = async () => {
     <div class="px-8 md:px-12 lg:px-20 py-12 flex flex-col items-center gap-12 w-full max-w-sm backdrop-blur-2xl rounded-2xl bg-amber-600/10 border">
       <!-- 로고 -->
       <div class="flex flex-col items-center gap-4 w-full">
-        <img src="/src/assets/logo.png" alt="Logo" class="h-24 w-24 object-contain rounded-4xl" />
+        <!-- <img src="/src/assets/vue.svg" alt="Logo" class="h-24 w-24 object-contain rounded-4xl" /> -->
+        <img src="/src/assets/vue.svg" alt="Logo" class="h-24 w-24 object-contain" />
         <div class="text-center">
-          <div class="text-3xl font-medium text-black">MPC</div>
+          <div class="text-3xl font-medium text-black">ABSENCE</div>
           <div class="mt-2 text-black/80 text-sm">
             계정이 없으신가요?
             <span class="underline cursor-pointer">가입하기</span>

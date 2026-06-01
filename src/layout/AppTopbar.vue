@@ -233,8 +233,9 @@ const confirm = async (e: any) => {
               fill="var(--primary-color)" />
           </g>
         </svg> -->
-        <img src="/src/assets/logo.png" alt="Logo" class="h-14 w-14 object-contain rounded-4xl" />
-        <span>My Pat Cmmunity</span>
+        <!-- <img src="/src/assets/vue.svg" alt="Logo" class="h-14 w-14 object-contain rounded-4xl" /> -->
+        <img src="/src/assets/vue.svg" alt="Logo" class="h-8 w-8 object-contain" />
+        <span>ABSENCE</span>
       </router-link>
     </div>
 
