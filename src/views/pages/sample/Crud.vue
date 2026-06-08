@@ -83,7 +83,7 @@ function deleteProduct() {
 
 function findIndexById(id) {
     let index = -1
-    for (let i = 0 i < products.value.length i++) {
+    for (let i = 0; i < products.value.length; i++) {
         if (products.value[i].id === id) {
             index = i
             break
@@ -96,7 +96,7 @@ function findIndexById(id) {
 function createId() {
     let id = ''
     var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-    for (var i = 0 i < 5 i++) {
+    for (var i = 0; i < 5; i++) {
         id += chars.charAt(Math.floor(Math.random() * chars.length))
     }
     return id
@@ -140,7 +140,7 @@ function getStatusLabel(status) {
             <Toolbar class="mb-6">
                 <template #start>
                     <Button label="New" icon="pi pi-plus" severity="secondary" class="mr-2" @click="openNew" />
-                    <Button label="Delete" icon="pi pi-trash" severity="secondary" @click="confirmDeleteSelected" :disabled="!selectedProducts || !selectedProducts.length" />
+                    <Button label="Delete" icon="pi pi-trash" severity="secondary" :disabled="!selectedProducts || !selectedProducts.length" @click="confirmDeleteSelected" />
                 </template>
 
                 <template #end>
@@ -152,13 +152,13 @@ function getStatusLabel(status) {
                 ref="dt"
                 v-model:selection="selectedProducts"
                 :value="products"
-                dataKey="id"
+                data-key="id"
                 :paginator="true"
                 :rows="10"
                 :filters="filters"
-                paginatorTemplate="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
-                :rowsPerPageOptions="[5, 10, 25]"
-                currentPageReportTemplate="Showing {first} to {last} of {totalRecords} products"
+                paginator-template="FirstPageLink PrevPageLink PageLinks NextPageLink LastPageLink CurrentPageReport RowsPerPageDropdown"
+                :rows-per-page-options="[5, 10, 25]"
+                current-page-report-template="Showing {first} to {last} of {totalRecords} products"
             >
                 <template #header>
                     <div class="flex flex-wrap gap-2 items-center justify-between">
@@ -172,7 +172,7 @@ function getStatusLabel(status) {
                     </div>
                 </template>
 
-                <Column selectionMode="multiple" style="width: 3rem" :exportable="false"></Column>
+                <Column selection-mode="multiple" style="width: 3rem" :exportable="false"></Column>
                 <Column field="code" header="Code" sortable style="min-width: 12rem"></Column>
                 <Column field="name" header="Name" sortable style="min-width: 16rem"></Column>
                 <Column header="Image">
@@ -188,7 +188,7 @@ function getStatusLabel(status) {
                 <Column field="category" header="Category" sortable style="min-width: 10rem"></Column>
                 <Column field="rating" header="Reviews" sortable style="min-width: 12rem">
                     <template #body="slotProps">
-                        <Rating :modelValue="slotProps.data.rating" :readonly="true" />
+                        <Rating :model-value="slotProps.data.rating" :readonly="true" />
                     </template>
                 </Column>
                 <Column field="inventoryStatus" header="Status" sortable style="min-width: 12rem">
@@ -219,7 +219,7 @@ function getStatusLabel(status) {
                 </div>
                 <div>
                     <label for="inventoryStatus" class="block font-bold mb-3">Inventory Status</label>
-                    <Select id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" optionLabel="label" placeholder="Select a Status" fluid></Select>
+                    <Select id="inventoryStatus" v-model="product.inventoryStatus" :options="statuses" option-label="label" placeholder="Select a Status" fluid></Select>
                 </div>
 
                 <div>

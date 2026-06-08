@@ -15,7 +15,7 @@ import DmModal from '@/components/dm/DmModal.vue'
 import DmModalPanel from '@/components/dm/DmModalPanel.vue'
 import { useDmClient } from '@/composables/useDmClient'
 import { useDmStore } from '@/store/dmStore'
-import DmConversationList from '@/views/pages/dm/DmConversationList.vue'
+import DmConversationList from '@/views/pages/admin/dm/DmConversationList.vue'
 
 const router = useRouter()
 const { toggleMenu, toggleDarkMode, isDarkTheme } = useLayout()
@@ -216,7 +216,7 @@ const confirm = async (e: any) => {
         <i class="pi pi-bars"></i>
       </button>
 
-      <router-link to="/dashboard" class="layout-topbar-logo">
+      <router-link to="/admin/dashboard" class="layout-topbar-logo">
 
         <!-- <svg viewBox="0 0 54 40" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path
@@ -233,8 +233,9 @@ const confirm = async (e: any) => {
               fill="var(--primary-color)" />
           </g>
         </svg> -->
-        <img src="/src/assets/logo.png" alt="Logo" class="h-14 w-14 object-contain rounded-4xl" />
-        <span>My Pat Cmmunity</span>
+        <!-- <img src="/src/assets/vue.svg" alt="Logo" class="h-14 w-14 object-contain rounded-4xl" /> -->
+        <img src="/src/assets/vue.svg" alt="Logo" class="h-8 w-8 object-contain" />
+        <span>ABSENCE</span>
       </router-link>
     </div>
 

@@ -1,30 +1,30 @@
-import router from '@/router';
-import { createApp } from 'vue';
-import App from './App.vue';
+import router from '@/router'
+import { createApp } from 'vue'
+import App from './App.vue'
 
 /* ==============================
  * Styles
  * ============================== */
-import '@/assets/styles.scss';
-import '@/assets/tailwind.css';
-import '@/styles/common.css';
+import '@/assets/styles.scss'
+import '@/assets/tailwind.css'
+import '@/styles/common.css'
 // import '@/styles/global.css';
-import 'tabulator-tables/dist/css/tabulator.min.css';
+import 'tabulator-tables/dist/css/tabulator.min.css'
 
 /* ==============================
- * State & UI Plugins
+ * Sakai -> State & UI Plugins
  * ============================== */
-import { createPinia } from 'pinia';
+import { createPinia } from 'pinia'
 
-import Aura from '@primeuix/themes/aura';
-import PrimeVue from 'primevue/config';
-import ConfirmationService from 'primevue/confirmationservice';
-import ToastService from 'primevue/toastservice';
+import Aura from '@primeuix/themes/aura'
+import PrimeVue from 'primevue/config'
+import ConfirmationService from 'primevue/confirmationservice'
+import ToastService from 'primevue/toastservice'
 
 /* ==============================
  * App Bootstrap
  * ============================== */
-const app = createApp(App);
+const app = createApp(App)
 
 app
   .use(createPinia()) // Pinia는 반드시 함수 호출
@@ -39,4 +39,4 @@ app
   })
   .use(ToastService)
   .use(ConfirmationService)
-  .mount('#app');
+  .mount('#app')
