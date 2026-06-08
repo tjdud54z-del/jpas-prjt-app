@@ -15,13 +15,13 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/',
     component: () =>
-      import('@/views/pages/main/UserLayout.vue'),
+      import('@/views/pages/user/UserLayout.vue'),
     children: [
       {
         path: '',
         name: 'main',
         component: () =>
-          import('@/views/pages/main/MainPage.vue')
+          import('@/views/pages/user/MainPage.vue')
       }
     ]
   },
