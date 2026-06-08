@@ -7,10 +7,16 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 const { openAlert } = useAlert()
 
+// 유저 ID 및 패스워드
 const userNo = ref('')
 const password = ref('')
 
-const loading = ref(false)
+// 로딩 컴포넌트
+const loading = ref(false) 
+
+// 기본값 USER
+const userType = ref<'ADMIN' | 'USER'>('ADMIN')   
+
 
 const login = async () => {
   if (!userNo.value?.trim() || !password.value) {
@@ -26,16 +32,22 @@ const login = async () => {
       password: password.value
     })
 
-    // 토큰 저장 -> localStorage
+    // 토큰 저장
     localStorage.setItem('accessToken', data.accessToken)
     localStorage.setItem('tokenType', data.tokenType)
     localStorage.setItem('expiresInSeconds', String(data.expiresInSeconds))
     localStorage.setItem('userInfo', JSON.stringify(data.userInfo))
-    localStorage.setItem('loginAt', String(Date.now())) // 만료 체크용(선택)
+    localStorage.setItem('loginAt', String(Date.now()))
 
     await openAlert('로그인되었습니다.')
 
-    router.push({ name: 'dashboard' })
+    // 라디오 값 기준 분기
+    if (userType.value === 'ADMIN') {
+      router.push('/admin')
+    } else {
+      router.push('/')
+    }
+
   } catch (e: any) {
     if (e?.__handledByAuthInterceptor) return
     await openAlert('로그인 실패하였습니다. 사번 또는 비밀번호를 확인하세요.')
@@ -74,6 +86,8 @@ const login = async () => {
       <!-- 입력 폼 -->
       <div class="flex flex-col gap-6 w-full">
         <form class="flex flex-col gap-6 w-full" @submit.prevent="login">
+
+          <!-- 계정/패스워크 -->
           <IconField>
             <InputIcon class="pi pi-user text-black/70" />
             <InputText v-model="userNo" class="w-full bg-black/10 text-black placeholder:text-black/70 rounded-3xl border border-black/10" placeholder="계정" />
@@ -83,8 +97,26 @@ const login = async () => {
             <InputIcon class="pi pi-lock text-black/70" />
             <InputText v-model="password" type="password" class="w-full bg-black/10 text-black placeholder:text-black/70 rounded-3xl border border-black/10" placeholder="비밀번호" />
           </IconField>
+          
+          <!-- 사용자 타입 선택 -->
+          <div class="flex justify-center gap-6 text-black">
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                v-model="userType"
+                type="radio"
+                value="USER" />사용자
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer">
+              <input
+                v-model="userType"
+                type="radio"
+                value="ADMIN" />관리자
+            </label>
+          </div>
 
+          <!-- 로그인 버튼 -->
           <Button label="로그인" class="w-full rounded-3xl bg-surface-950 border-surface-950 text-black" :loading="loading" type="submit" />
+
         </form>
       </div>
       <a class="text-black/80 text-sm cursor-pointer hover:text-black"> 비밀번호를 잊어버리셨나요? </a>

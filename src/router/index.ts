@@ -4,67 +4,82 @@ import { createRouter, createWebHistory } from 'vue-router'
 /* ==============================
  * Layouts
  * ============================== */
-import AppLayout from '@/layout/AppLayout.vue'
-
-/* ==============================
- * Pages (직접 import 필요한 것만)
- * ============================== */
+import AppLayout from '@/layout/AppLayout.vue' // 관리자
 import Login from '@/views/pages/auth/Login.vue'
 
 /* ==============================
  * Routes
  * ============================== */
 const routes: RouteRecordRaw[] = [
-  /* 로그인 (레이아웃 없음) */
+  /* 1. 사용자 영역 (Argon 템플릿) */
+  {
+    path: '/',
+    component: () =>
+      import('@/views/pages/main/UserLayout.vue'),
+    children: [
+      {
+        path: '',
+        name: 'main',
+        component: () =>
+          import('@/views/pages/main/MainPage.vue')
+      }
+    ]
+  },
+
+  /* 2. 로그인 */
   {
     path: '/login',
     name: 'login',
     component: Login
   },
-  /* 기존 Prime/AppLayout 영역 */
+
+  /* 3. 관리자 영역 (Sakai 유지) */
   {
-    path: '/',
+    path: '/admin',
     component: AppLayout,
     children: [
       {
         path: '',
-        redirect: '/login'
+        redirect: '/admin/dashboard'
+      },
+      /* ===== 실제 관리자 페이지 ===== */
+      {
+        path: 'dashboard',
+        name: 'adminDashboard',
+        component: () => import('@/views/Dashboard.vue')
       },
       {
         path: 'users',
         name: 'users',
         component: () =>
-          import('@/views/pages/user/UserList.vue')
+          import('@/views/pages/admin/user/UserList.vue')
       },
       {
         path: 'users/create',
         name: 'userCreate',
         component: () =>
-          import('@/views/pages/user/UserCreate.vue')
+          import('@/views/pages/admin/user/UserCreate.vue')
       },
       {
         path: 'dm',
         name: 'DmPage',
         component: () =>
-          import('@/views/pages/dm/DmPage.vue')
+          import('@/views/pages/admin/dm/DmPage.vue')
       },
       {
         path: 'dmManage',
         name: 'dmManage',
         component: () =>
-          import('@/views/pages/dm/DmManager.vue')
+          import('@/views/pages/admin/dm/DmManager.vue')
       },
       {
         path: 'commonCodes',
         name: 'commonCodes',
         component: () =>
-          import('@/views/pages/cmmnCd/CmmnCdList.vue')
+          import('@/views/pages/admin/cmmnCd/CmmnCdList.vue')
       },
-      {
-        path: 'dashboard',
-        name: 'dashboard',
-        component: () => import('@/views/Dashboard.vue')
-      },
+
+      /* ===== UI 샘플 유지 가능 ===== */
       {
         path: 'uikit/formlayout',
         name: 'formlayout',
@@ -162,48 +177,30 @@ const routes: RouteRecordRaw[] = [
       {
         path: 'pages/empty',
         name: 'empty',
-        component: () => import('@/views/pages/Empty.vue')
+        component: () =>
+          import('@/views/pages/sample/Empty.vue')
       },
       {
         path: 'pages/crud',
         name: 'crud',
-        component: () => import('@/views/pages/Crud.vue')
+        component: () =>
+          import('@/views/pages/sample/Crud.vue')
       },
       {
         path: 'start/documentation',
         name: 'documentation',
         component: () =>
-          import('@/views/pages/Documentation.vue')
+          import('@/views/pages/sample/Documentation.vue')
       }
     ]
   },
-  /* Admin ERP 영역 */
-  // {
-  //     path: '/admin',
-  //     component: AdminLayout,
-  //     children: [
-  //         {
-  //             path: 'users',
-  //             name: 'users',
-  //             component: () => import('@/views/pages/UserList.vue')
-  //         },
-  //         {
-  //             path: 'departments',
-  //             name: 'departments',
-  //             component: () => import('@/views/pages/DepartmentList.vue')
-  //         },
-  //         {
-  //             path: 'commonCodes',
-  //             name: 'commonCodes',
-  //             component: () => import('@/views/pages/CommonCodeList.vue')
-  //         }
-  //     ]
-  // },
+
   /* 기타 페이지 */
   {
     path: '/landing',
     name: 'landing',
-    component: () => import('@/views/pages/Landing.vue')
+    component: () =>
+      import('@/views/pages/sample/Landing.vue')
   },
   {
     path: '/auth/access',
@@ -219,7 +216,8 @@ const routes: RouteRecordRaw[] = [
   {
     path: '/:pathMatch(.*)*',
     name: 'notfound',
-    component: () => import('@/views/pages/NotFound.vue')
+    component: () =>
+      import('@/views/pages/error/NotFound.vue')
   }
 ]
 
