@@ -34,10 +34,10 @@ const login = async () => {
     })
 
     // 권한이 A 관리자일경우만 PASS
-    if(userType.value === 'ADMIN' && data.userInfo.userType !== "A"){
-      await openAlert('해당 계정은 관리자 접근권한이 없습니다.')
-      return
-    }
+    // if(userType.value === 'ADMIN' && data.userInfo.userType !== "A"){
+    //   await openAlert('해당 계정은 관리자 접근권한이 없습니다.')
+    //   return
+    // }
 
     // 토큰 저장
     localStorage.setItem('accessToken', data.accessToken)
